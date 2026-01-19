@@ -1,0 +1,41 @@
+source:
+  name: massive
+  base_url: https://api.massive.com
+  auth:
+    type: header
+    header_name: Authorization
+    api_key: ouwu6g8Vu4uTkCEWINDBV985kwdlXll6
+    prefix: "Bearer "
+  rate_limit:
+    requests_per_minute: 5
+
+resource:
+  name: forex_daily
+  endpoint: /v2/aggs/ticker/{ticker}/range/{multiplier}/{timespan}/{from}/{to}
+  method: GET
+  path_params:
+    ticker: "{ticker}"
+    multiplier: "1"
+    timespan: "day"
+    from: "{start_date}"
+    to: "{end_date}"
+
+  # Range API returns array of bars
+  extract:
+    data_date:
+      path: "results[*].t"
+      type: timestamp_ms_to_date
+      partition_key: true
+    ticker:
+      path: "_param.ticker"
+      type: string
+    open:
+      path: "results[*].o"
+    high:
+      path: "results[*].h"
+    low:
+      path: "results[*].l"
+    close:
+      path: "results[*].c"
+    volume:
+      path: "results[*].v"

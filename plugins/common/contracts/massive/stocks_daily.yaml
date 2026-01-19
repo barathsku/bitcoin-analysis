@@ -1,0 +1,42 @@
+source:
+  name: massive
+  base_url: https://api.massive.com
+  auth:
+    type: header
+    header_name: Authorization
+    api_key: ouwu6g8Vu4uTkCEWINDBV985kwdlXll6
+    prefix: "Bearer "
+  rate_limit:
+    requests_per_minute: 5
+
+resource:
+  name: stocks_daily
+  endpoint: /v1/open-close/{ticker}/{date}
+  method: GET
+  path_params:
+    ticker: "{ticker}"
+    date: "{data_date}"
+  query_params:
+    adjusted: "true"
+
+  # Single-day API: no array flattening needed
+  extract:
+    data_date:
+      path: "from"
+      type: string_to_date
+      partition_key: true
+    ticker:
+      path: "_param.ticker"
+      type: string
+    open:
+      path: "open"
+    high:
+      path: "high"
+    low:
+      path: "low"
+    close:
+      path: "close"
+    pre_market:
+      path: "preMarket"
+    after_hours:
+      path: "afterHours"
