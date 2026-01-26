@@ -5,7 +5,7 @@ from airflow.operators.empty import EmptyOperator
 from common.core.components import ingest
 
 default_args = {
-    'owner': 'data-platform',
+    'owner': 'barath',
     'depends_on_past': False,
     'email_on_failure': False,
     'email_on_retry': False,
