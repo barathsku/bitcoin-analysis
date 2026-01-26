@@ -50,7 +50,7 @@ def get_adapter(source: str, resource: str, contract: Dict[str, Any]):
 
 
 @task_group
-def ingest(
+def _ingest_data(
     source: str,
     resource: str,
     window_start: Optional[str] = None,
@@ -495,3 +495,42 @@ def ingest(
     loaded = load_data(validated)
 
     return loaded
+
+
+def ingest(
+    source: str,
+    resource: str,
+    window_start: Optional[str] = None,
+    window_end: Optional[str] = None,
+    pool: Optional[str] = None,
+    **kwargs,
+):
+    """
+    Wrapper for _ingest_data task group to allow dynamic group_id injection.
+
+    Args:
+        source: Source name
+        resource: Resource name
+        group_id: Optional custom group_id (popped from kwargs)
+        **kwargs: Other args passed to underlying task group
+    """
+    group_id = kwargs.pop("group_id", None)
+
+    if group_id:
+        return _ingest_data.override(group_id=group_id)(
+            source=source,
+            resource=resource,
+            window_start=window_start,
+            window_end=window_end,
+            pool=pool,
+            **kwargs,
+        )
+    else:
+        return _ingest_data(
+            source=source,
+            resource=resource,
+            window_start=window_start,
+            window_end=window_end,
+            pool=pool,
+            **kwargs,
+        )
