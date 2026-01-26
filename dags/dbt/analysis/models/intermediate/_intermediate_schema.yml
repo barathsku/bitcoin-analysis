@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: int_data_gaps
+    description: "Identifies missing dates in source data per asset within the observed date range"
+    meta:
+      owner: "barath"
+    columns:
+      - name: asset_id
+        description: "Asset identifier with missing data"
+        tests:
+          - not_null
+      - name: asset_type
+        description: "Type of asset (crypto, fiat, stock, index)"
+        tests:
+          - accepted_values:
+              values: ['crypto', 'fiat', 'stock', 'index']
+      - name: missing_date
+        description: "Date that is missing from source data"
+        tests:
+          - not_null
+      - name: is_trading_day
+        description: "Whether the missing date falls on a trading day (Mon-Fri)"
+        tests:
+          - accepted_values:
+              values: [0, 1]
+      - name: detected_at
+        description: "Timestamp when the gap was detected"

@@ -34,7 +34,7 @@ with DAG(
             description='End date (YYYY-MM-DD)'
         ),
         'ticker': Param(
-            default='',
+            default=None,
             type='string',
             description='Ticker symbol (for Massive stocks/forex, e.g., AAPL, C:EURUSD)'
         ),

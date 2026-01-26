@@ -1,0 +1,86 @@
+version: 2
+
+models:
+  - name: dim_assets
+    description: "Asset dimension table"
+    tests:
+      - dbt_utils.equal_rowcount:
+          compare_model: ref('stg_unified_prices')
+          group_by: asset_id
+    columns:
+      - name: asset_id
+        description: "Unique asset identifier"
+        tests:
+          - not_null
+          - unique
+      - name: asset_type
+        description: "Asset classification"
+        tests:
+          - accepted_values:
+              values: ['crypto', 'fiat', 'stock', 'index']
+
+  - name: dim_dates
+    description: "Date dimension table"
+    columns:
+      - name: date
+        description: "Calendar date"
+        tests:
+          - not_null
+          - unique
+      - name: is_trading_day
+        description: "Flag indicating weekday (Mon-Fri)"
+        tests:
+          - accepted_values:
+              values: [0, 1]
+
+  - name: fct_daily_prices
+    description: "Fact table of daily closing prices (forward-filled for missing trading days)"
+    columns:
+      - name: asset_id
+        description: "Asset identifier"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_assets')
+              field: asset_id
+      - name: data_date
+        description: "Price date"
+        tests:
+          - not_null
+      - name: close_price
+        description: "Closing price in USD"
+        tests:
+          - not_null
+      - name: price_source
+        description: "Whether price was observed from source data or imputed via forward-fill"
+        tests:
+          - accepted_values:
+              values: ['OBSERVED', 'IMPUTED']
+
+  - name: fct_daily_returns
+    description: "Fact table of daily returns"
+    columns:
+      - name: asset_id
+        description: "Asset identifier"
+        tests:
+          - not_null
+      - name: data_date
+        description: "Return date"
+        tests:
+          - not_null
+      - name: daily_return
+        description: "Daily return percentage (decimal)"
+
+  - name: fct_rolling_metrics
+    description: "Fact table with rolling performance metrics"
+    columns:
+      - name: asset_id
+        description: "Asset identifier"
+        tests:
+          - not_null
+      - name: data_date
+        description: "Calculation date"
+        tests:
+          - not_null
+      - name: volatility_30d
+        description: "30-day rolling volatility"

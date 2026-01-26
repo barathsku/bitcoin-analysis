@@ -22,13 +22,14 @@ resource:
 
   # Range API returns array of bars
   extract:
-    data_date:
-      path: "results[*].t"
-      type: timestamp_ms_to_date
-      partition_key: true
     ticker:
       path: "_param.ticker"
       type: string
+      partition_key: true  # Partition by ticker (forex pair) first
+    data_date:
+      path: "results[*].t"
+      type: timestamp_ms_to_date
+      partition_key: true  # Then by date
     open:
       path: "results[*].o"
     high:
@@ -39,3 +40,16 @@ resource:
       path: "results[*].c"
     volume:
       path: "results[*].v"
+
+  validation:
+    soda_checks:
+      - row_count > 0
+      - missing_count(data_date) = 0
+      - missing_count(ticker) = 0
+      - missing_count(close) = 0
+      - open > 0
+      - high > 0
+      - low > 0
+      - close > 0
+      - high >= low
+      - duplicate_count(data_date) = 0

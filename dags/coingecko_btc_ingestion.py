@@ -11,6 +11,9 @@ default_args = {
     'email_on_retry': False,
     'retries': 3,
     'retry_delay': timedelta(minutes=5),
+    'retry_exponential_backoff': True,
+    'max_retry_delay': timedelta(minutes=30),
+    'execution_timeout': timedelta(hours=1),
 }
 
 with DAG(
@@ -19,7 +22,7 @@ with DAG(
     description='Ingest daily Bitcoin price data from CoinGecko',
     schedule='@daily',
     start_date=datetime(2025, 1, 18),
-    catchup=True,
+    catchup=False,  # Range endpoint loads full history; use manual_ingestion for backfills
     max_active_runs=1,
     tags=['ingestion', 'coingecko', 'bitcoin'],
 ) as dag:
@@ -29,7 +32,8 @@ with DAG(
     
     ingest_btc = ingest(
         source='coingecko',
-        resource='btc_usd_daily'
+        resource='btc_usd_daily',
+        pool='coingecko_api_pool'
     )
     
     begin >> ingest_btc >> end

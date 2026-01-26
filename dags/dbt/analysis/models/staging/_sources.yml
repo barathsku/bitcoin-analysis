@@ -1,0 +1,107 @@
+version: 2
+
+sources:
+  - name: bronze
+    description: "Raw parquet files from API ingestion pipeline"
+    freshness:
+      warn_after: {count: 2, period: day}
+      error_after: {count: 3, period: day}
+    meta:
+      owner: "barath"
+    tables:
+      - name: btc_usd_daily
+        description: "Bitcoin daily prices from CoinGecko"
+        loaded_at_field: "__ingested_at"
+        freshness:
+          warn_after: {count: 2, period: day}
+          error_after: {count: 3, period: day}
+        meta:
+          source_api: "CoinGecko"
+          refresh: "daily"
+          external_location: "read_parquet('/home/bdn/coingecko/data/bronze/source=coingecko/resource=btc_usd_daily/**/*.parquet', hive_partitioning=true, union_by_name=true)"
+        columns:
+          - name: data_date
+            description: "Trading date"
+            tests:
+              - not_null
+              - unique
+          - name: price_usd
+            description: "BTC closing price in USD"
+            tests:
+              - not_null
+          - name: market_cap_usd
+            description: "BTC market capitalization in USD"
+          - name: volume_24h_usd
+            description: "24-hour trading volume in USD"
+          - name: __batch_id
+            description: "Ingestion batch identifier"
+          - name: __source_name
+            description: "Source system name"
+          - name: __ingested_at
+            description: "Timestamp of ingestion"
+
+      - name: stocks_daily
+        description: "Daily stock prices from Massive (Polygon)"
+        loaded_at_field: "__ingested_at"
+        freshness:
+          warn_after: {count: 2, period: day}
+          error_after: {count: 4, period: day}  # Account for weekends
+        meta:
+          source_api: "Massive/Polygon"
+          refresh: "daily"
+          external_location: "read_parquet('/home/bdn/coingecko/data/bronze/source=massive/resource=stocks_daily/**/*.parquet', hive_partitioning=true, union_by_name=true)"
+        columns:
+          - name: ticker
+            description: "Stock ticker symbol"
+            tests:
+              - not_null
+          - name: data_date
+            description: "Trading date"
+            tests:
+              - not_null
+          - name: open
+            description: "Opening price"
+          - name: high
+            description: "Highest price"
+          - name: low
+            description: "Lowest price"
+          - name: close
+            description: "Closing price"
+            tests:
+              - not_null
+          - name: volume
+            description: "Trading volume"
+          - name: vwap
+            description: "Volume-weighted average price"
+
+      - name: forex_daily
+        description: "Daily forex rates from Massive (Polygon)"
+        loaded_at_field: "__ingested_at"
+        freshness:
+          warn_after: {count: 2, period: day}
+          error_after: {count: 4, period: day}  # Account for weekends
+        meta:
+          source_api: "Massive/Polygon"
+          refresh: "daily"
+          external_location: "read_parquet('/home/bdn/coingecko/data/bronze/source=massive/resource=forex_daily/**/*.parquet', hive_partitioning=true, union_by_name=true)"
+        columns:
+          - name: ticker
+            description: "Forex pair ticker (e.g., C:EURUSD)"
+            tests:
+              - not_null
+          - name: data_date
+            description: "Trading date"
+            tests:
+              - not_null
+          - name: open
+            description: "Opening rate"
+          - name: high
+            description: "Highest rate"
+          - name: low
+            description: "Lowest rate"
+          - name: close
+            description: "Closing rate"
+            tests:
+              - not_null
+          - name: volume
+            description: "Trading volume"

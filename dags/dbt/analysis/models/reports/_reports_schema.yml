@@ -1,0 +1,60 @@
+version: 2
+
+models:
+  - name: rpt_performance_summary
+    description: "Performance summary showing asset returns across multiple time windows compared to Bitcoin"
+    columns:
+      - name: asset_id
+        description: "Asset identifier"
+        tests:
+          - not_null
+      - name: period
+        description: "Time period (7D, 1M, 3M, 6M, YTD, 1Y)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['7D', '1M', '3M', '6M', 'YTD', '1Y']
+      - name: return_pct
+        description: "Total return percentage for the period"
+      - name: vs_btc_status
+        description: "Whether asset outperformed, matched, or underperformed BTC"
+        tests:
+          - accepted_values:
+              values: ['Outperformed', 'Matched', 'Underperformed']
+
+  - name: rpt_investment_simulation
+    description: "Investment simulation comparing $1K lump sum vs $100/month DCA strategy"
+    columns:
+      - name: asset
+        description: "Asset (USD or BTC)"
+        tests:
+          - not_null
+      - name: strategy
+        description: "Investment strategy (Lump Sum or DCA)"
+        tests:
+          - not_null
+      - name: initial_investment_usd
+        description: "Total amount invested in USD"
+        tests:
+          - not_null
+      - name: current_value_usd
+        description: "Current portfolio value in USD"
+        tests:
+          - not_null
+
+  - name: rpt_volatility_comparison
+    description: "Volatility analysis comparing daily and annualized volatility across assets"
+    columns:
+      - name: asset_id
+        description: "Asset identifier"
+        tests:
+          - not_null
+          - unique
+      - name: daily_volatility_pct
+        description: "Standard deviation of daily returns (percentage)"
+        tests:
+          - not_null
+      - name: annualized_volatility_pct
+        description: "Annualized volatility (percentage)"
+        tests:
+          - not_null

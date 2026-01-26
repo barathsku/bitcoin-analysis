@@ -17,20 +17,31 @@ logger = logging.getLogger(__name__)
 class ParquetWriter:
     """Writer for staging (JSON) and bronze (Parquet) layers with WAP pattern."""
     
-    def __init__(self, base_path: str = "data"):
+    def __init__(self, base_path: Optional[str] = None):
         """
         Initialize writer.
         
         Args:
             base_path: Base directory for data storage
         """
+        if base_path is None:
+            # Default to AIRFLOW_HOME/data
+            airflow_home = os.getenv('AIRFLOW_HOME', '/opt/airflow')
+            base_path = os.path.join(airflow_home, "data")
+            
         self.base_path = Path(base_path)
         self.staging_path = self.base_path / "staging"
         self.bronze_path = self.base_path / "bronze"
         
+        logger.info(f"Initializing ParquetWriter with base_path: {self.base_path}")
+        
         # Ensure base directories exist
-        self.staging_path.mkdir(parents=True, exist_ok=True)
-        self.bronze_path.mkdir(parents=True, exist_ok=True)
+        try:
+            self.staging_path.mkdir(parents=True, exist_ok=True)
+            self.bronze_path.mkdir(parents=True, exist_ok=True)
+        except PermissionError as e:
+            logger.error(f"Permission denied creating directories at {self.base_path}. Check AIRFLOW_HOME permissions.")
+            raise e
     
     def write_staging(
         self,
@@ -72,6 +83,22 @@ class ParquetWriter:
         
         logger.info(f"Wrote staging data to {file_path}")
         return str(file_path)
+    
+    def read_staging(self, staging_path: str) -> Dict[str, Any]:
+        """
+        Read raw JSON from staging path.
+        
+        Args:
+            staging_path: Path to staging JSON file
+            
+        Returns:
+            Raw API response as dict
+        """
+        with open(staging_path, 'r') as f:
+            data = json.load(f)
+        
+        logger.info(f"Read staging data from {staging_path}")
+        return data
     
     def write_bronze(
         self,

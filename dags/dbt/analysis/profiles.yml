@@ -1,0 +1,8 @@
+analysis:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: /home/bdn/coingecko/analysis.duckdb
+      threads: 4
+      schema: main

@@ -22,10 +22,15 @@ resource:
   # Extraction rules: JSON path --> Parquet column
   # Arrays with [*] are zipped by index to create rows
   extract:
+    data_timestamp:
+      path: "prices[*][0]"
+      type: timestamp_ms_to_datetime
+      # Raw timestamp preserved for differentiation and ordering
     data_date:
       path: "prices[*][0]"
       type: timestamp_ms_to_date
       partition_key: true
+      # Partition key for query efficiency, duplicates allowed
     price_usd:
       path: "prices[*][1]"
       # type: auto-inferred as float64
@@ -33,3 +38,18 @@ resource:
       path: "market_caps[*][1]"
     volume_24h_usd:
       path: "total_volumes[*][1]"
+
+  # Data quality validation checks (Soda Core)
+  # Note: Bronze layer contains ALL raw data points, including multiple per date
+  # Deduplication happens in Silver layer (dbt)
+  validation:
+    soda_checks:
+      - row_count > 0
+      - missing_count(data_timestamp) = 0
+      - missing_count(data_date) = 0
+      - missing_count(price_usd) = 0
+      - missing_count(market_cap_usd) = 0
+      - missing_count(volume_24h_usd) = 0
+      - price_usd > 0
+      - market_cap_usd > 0
+      - volume_24h_usd > 0

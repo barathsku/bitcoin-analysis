@@ -11,10 +11,10 @@ logger = logging.getLogger(__name__)
 
 class MassiveStocksAdapter(BaseAdapter):
     """
-    Adapter for Massive Stocks API (single-day endpoint).
+    Adapter for Massive Stocks Aggregates API (range endpoint with pagination).
     
-    The stocks endpoint returns data for a single day, so we need to iterate
-    through the date range with rate limiting.
+    Uses /v2/aggs endpoint to fetch date ranges. Handles cursor-based pagination
+    (120 items per page) to retrieve complete dataset.
     """
     
     def fetch(
@@ -23,29 +23,67 @@ class MassiveStocksAdapter(BaseAdapter):
         params: Dict[str, Any]
     ) -> Dict[str, Any]:
         """
-        Fetch data from Massive Stocks API.
+        Fetch data from Massive Stocks Aggregates API with pagination.
+        
+        Follows next_url cursor until all pages are retrieved.
         
         Args:
             api_client: Configured APIClient instance
-            params: Request parameters (must include ticker and data_date)
+            params: Request parameters (must include ticker, start_date, end_date)
             
         Returns:
-            Raw API response
+            Merged API response with all results
         """
         endpoint = self.build_url(params)
         query_params = self.build_query_params(params)
         
         ticker = params.get('ticker', 'UNKNOWN')
-        data_date = params.get('data_date', 'UNKNOWN')
-        logger.info(f"Fetching Massive Stocks: {ticker} for {data_date}")
+        logger.info(f"Fetching Massive Stocks: {ticker} from {params.get('start_date')} to {params.get('end_date')}")
         
-        response = api_client.request(
-            method=self.resource_config.get('method', 'GET'),
-            endpoint=endpoint,
-            params=query_params
-        )
+        all_results = []
+        next_url = None
+        page_count = 0
         
-        return response
+        while True:
+            page_count += 1
+            
+            if next_url:
+                # Use full next_url for pagination
+                # Massive requires apiKey to be appended to the cursor URL
+                if 'apiKey' not in next_url and 'api_key' in api_client.auth_config:
+                    separator = '&' if '?' in next_url else '?'
+                    next_url = f"{next_url}{separator}apiKey={api_client.auth_config['api_key']}"
+
+                response = api_client.request(
+                    method='GET',
+                    endpoint=next_url
+                )
+            else:
+                # First request
+                response = api_client.request(
+                    method=self.resource_config.get('method', 'GET'),
+                    endpoint=endpoint,
+                    params=query_params
+                )
+            
+            results = response.get('results', [])
+            all_results.extend(results)
+            
+            next_url = response.get('next_url')
+            logger.info(f"Page {page_count}: {len(results)} records ({len(all_results)} total)")
+            
+            if not next_url:
+                break
+        
+        logger.info(f"Completed: {ticker} - {len(all_results)} records across {page_count} pages")
+        
+        # Return in same format as original response
+        return {
+            'results': all_results,
+            'ticker': ticker,
+            'queryCount': len(all_results),
+            'resultsCount': len(all_results)
+        }
     
     def iterate_requests(
         self, 
@@ -54,10 +92,9 @@ class MassiveStocksAdapter(BaseAdapter):
         **kwargs
     ) -> Iterator[Dict[str, Any]]:
         """
-        Generate request parameters for each day in the range.
+        Generate request parameters for date range.
         
-        Since Massive Stocks is a single-day API, we yield one request per day.
-        The API client's rate limiter will handle spacing.
+        With range endpoint, yields single request (pagination handled in fetch).
         
         Args:
             start_date: Start date
@@ -65,29 +102,20 @@ class MassiveStocksAdapter(BaseAdapter):
             **kwargs: Must include 'ticker'
             
         Yields:
-            One request dict per day
+            Single request dict for entire date range
         """
         ticker = kwargs.get('ticker')
         if not ticker:
             raise ValueError("ticker is required for Massive Stocks adapter")
         
-        current_date = start_date
-        request_count = 0
+        logger.info(f"Massive Stocks: Requesting {ticker} from {start_date} to {end_date}")
         
-        while current_date <= end_date:
-            # Format date as YYYY-MM-DD
-            date_str = current_date.strftime('%Y-%m-%d')
-            
-            yield {
-                'ticker': ticker,
-                'data_date': date_str,
-                **kwargs
-            }
-            
-            current_date += timedelta(days=1)
-            request_count += 1
-        
-        logger.info(f"Massive Stocks: Generated {request_count} requests for {ticker}")
+        yield {
+            'ticker': ticker,
+            'start_date': start_date.strftime('%Y-%m-%d'),
+            'end_date': end_date.strftime('%Y-%m-%d'),
+            **kwargs
+        }
 
 
 class MassiveForexAdapter(BaseAdapter):

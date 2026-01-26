@@ -68,7 +68,7 @@ Your submission should include a README that includes at least a setup guide, de
 
 3. Written Analysis 
 - Provide a summary which answers the following question:
-- Which asset outperformed Bitcoin across each time window (5Y, 1Y, YTD, 6M, 3M, 1M, 7D)?
+- Which asset outperformed Bitcoin across each time window (1Y, YTD, 6M, 3M, 1M, 7D)?
 - What is the current worth of a $1K USD vs Bitcoin investment made one year ago?
 - How do returns compare for $100/month dollar-cost averaging into Bitcoin over 12 months vs an initial lump sum?
 - Based on these numbers, which was more volatile: fiat currencies or Bitcoin?

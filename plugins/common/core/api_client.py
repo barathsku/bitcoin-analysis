@@ -133,7 +133,10 @@ class APIClient:
         """
         self.rate_limiter.acquire()
         
-        url = f"{self.base_url}{endpoint}"
+        if endpoint.startswith("http"):
+             url = endpoint
+        else:
+             url = f"{self.base_url}{endpoint}"
         
         request_headers = self._build_headers()
         if headers:
