@@ -1,0 +1,26 @@
+# Centralized source configuration
+# Contains API credentials, base URLs, auth, and rate limits for all data sources
+
+sources:
+  massive:
+    name: massive
+    display_name: Massive (Polygon.io)
+    base_url: https://api.massive.com
+    auth:
+      type: header
+      header_name: Authorization
+      api_key: ${MASSIVE_API_KEY}
+      prefix: "Bearer "
+    rate_limit:
+      requests_per_minute: 5
+
+  coingecko:
+    name: coingecko
+    display_name: CoinGecko
+    base_url: https://api.coingecko.com/api/v3
+    auth:
+      type: header
+      header_name: x-cg-demo-api-key
+      api_key: ${COINGECKO_API_KEY}
+    rate_limit:
+      requests_per_minute: 30

@@ -1,0 +1,58 @@
+# Massive Stocks Resource Definition
+
+resource:
+  name: stocks
+  display_name: Stocks
+  source: massive
+  adapter: MassiveStocksAdapter
+  tags:
+    - equity
+    - stocks
+  endpoint: /v2/aggs/ticker/{ticker}/range/1/day/{from}/{to}
+  method: GET
+  
+  path_params:
+    ticker: "{ticker}"
+    from: "{start_date}"
+    to: "{end_date}"
+    
+  query_params:
+    adjusted: "true"
+    sort: "asc"
+    limit: "120"
+
+  # Range API returns array of bars with pagination support
+  extract:
+    ticker:
+      path: "_param.ticker"
+      type: string
+      partition_key: true  # Partition by ticker first
+    data_date:
+      path: "results[*].t"
+      type: timestamp_ms_to_date
+      partition_key: true  # Then by date
+    open:
+      path: "results[*].o"
+    high:
+      path: "results[*].h"
+    low:
+      path: "results[*].l"
+    close:
+      path: "results[*].c"
+    volume:
+      path: "results[*].v"
+    vwap:
+      path: "results[*].vw"
+
+  validation:
+    soda_checks:
+      - row_count > 0
+      - missing_count(data_date) = 0
+      - missing_count(ticker) = 0
+      - missing_count(close) = 0
+      - open > 0
+      - high > 0
+      - low > 0
+      - close > 0
+      - high >= low
+      - duplicate_count(data_date) = 0
