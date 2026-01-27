@@ -24,6 +24,79 @@ from common.adapters.massive import MassiveStocksAdapter, MassiveForexAdapter
 logger = logging.getLogger(__name__)
 
 
+def get_existing_dates(
+    source: str,
+    resource: str,
+    ticker: Optional[str] = None,
+    base_path: Optional[str] = None,
+) -> set:
+    """
+    Scan bronze partitions to find already-ingested dates.
+
+    Checks the bronze directory structure to determine which dates
+    already have data, enabling gap-aware fetching.
+
+    Args:
+        source: Source name (e.g., 'coingecko', 'massive')
+        resource: Resource name (e.g., 'market_chart', 'stocks')
+        ticker: Optional ticker symbol for partitioned resources
+        base_path: Optional base path (defaults to AIRFLOW_HOME/data)
+
+    Returns:
+        Set of date objects for which data already exists
+    """
+    import os
+    from pathlib import Path
+    from datetime import datetime
+
+    if base_path is None:
+        airflow_home = os.getenv("AIRFLOW_HOME", "/opt/airflow")
+        base_path = os.path.join(airflow_home, "data")
+
+    bronze_path = (
+        Path(base_path) / "bronze" / f"source={source}" / f"resource={resource}"
+    )
+
+    if not bronze_path.exists():
+        logger.info(f"No existing bronze data found at {bronze_path}")
+        return set()
+
+    existing_dates = set()
+
+    # Handle different partition structures
+    if ticker:
+        # Multi-partition: ticker + data_date (stocks, forex)
+        ticker_path = bronze_path / f"ticker={ticker}"
+        if ticker_path.exists():
+            for date_partition in ticker_path.iterdir():
+                if date_partition.is_dir() and date_partition.name.startswith(
+                    "data_date="
+                ):
+                    date_str = date_partition.name.split("=")[1]
+                    try:
+                        existing_dates.add(
+                            datetime.strptime(date_str, "%Y-%m-%d").date()
+                        )
+                    except ValueError:
+                        logger.warning(f"Invalid date partition: {date_partition.name}")
+    else:
+        # Single partition: data_date only (crypto)
+        for date_partition in bronze_path.iterdir():
+            if date_partition.is_dir() and date_partition.name.startswith("data_date="):
+                date_str = date_partition.name.split("=")[1]
+                try:
+                    existing_dates.add(datetime.strptime(date_str, "%Y-%m-%d").date())
+                except ValueError:
+                    logger.warning(f"Invalid date partition: {date_partition.name}")
+
+    if existing_dates:
+        logger.info(
+            f"Found {len(existing_dates)} existing dates in bronze for {source}/{resource}"
+        )
+
+    return existing_dates
+
+
 def get_adapter(source: str, resource: str, contract: Dict[str, Any]):
     """
     Factory function to get the appropriate adapter.
@@ -156,9 +229,68 @@ def _ingest_data(
         adapter = get_adapter(source, resource, contract)
         writer = ParquetWriter()
 
+        # Gap-aware fetching: check if data already exists
+        force_refetch = kwargs.get("force_refetch", False)
+        ticker = kwargs.get("ticker")
+
+        if not force_refetch:
+            existing_dates = get_existing_dates(
+                source=source, resource=resource, ticker=ticker
+            )
+
+            # Generate set of requested dates
+            requested_dates = set()
+            current = start_date
+            while current <= end_date:
+                requested_dates.add(current)
+                current += timedelta(days=1)
+
+            missing_dates = requested_dates - existing_dates
+
+            if not missing_dates:
+                logger.info(
+                    f"All {len(requested_dates)} requested dates already exist in bronze. "
+                    f"Skipping fetch (use force_refetch=true to override)"
+                )
+                metadata_repo.end_step(
+                    run_id=run_id,
+                    step_name="extract",
+                    status="SUCCESS",
+                    metadata={
+                        "staging_paths": [],
+                        "num_files": 0,
+                        "skipped_reason": "all_dates_exist",
+                    },
+                )
+                return {
+                    "contract": contract,
+                    "batch_id": batch_id,
+                    "source": source,
+                    "resource": resource,
+                    "start_date": start_date_str,
+                    "end_date": end_date_str,
+                    "staging_paths": [],
+                    "data_interval_start": data_interval_start.isoformat(),
+                    "data_interval_end": data_interval_end.isoformat(),
+                    "ticker": ticker,
+                    "run_id": run_id,
+                    "skipped": True,
+                }
+            else:
+                logger.info(
+                    f"Gap-aware fetch: {len(missing_dates)} of {len(requested_dates)} dates missing. "
+                    f"Fetching entire range (API limitation: range queries only)"
+                )
+        else:
+            logger.info(
+                f"force_refetch=true, fetching all dates regardless of existing data"
+            )
+
         # Fetch and write to staging
         request_kwargs = {
-            k: v for k, v in kwargs.items() if k not in ["start_date", "end_date"]
+            k: v
+            for k, v in kwargs.items()
+            if k not in ["start_date", "end_date", "force_refetch"]
         }
         request_kwargs["source"] = source
         request_kwargs["resource"] = resource
@@ -218,6 +350,15 @@ def _ingest_data(
 
         This prepares data for validation but doesn't publish yet (WAP pattern).
         """
+        # Handle skipped extraction (gap-aware logic)
+        if extract_result.get("skipped", False):
+            logger.info("Extraction was skipped (all dates exist), skipping transform")
+            return {
+                **extract_result,
+                "tmp_paths": [],
+                "total_records": 0,
+            }
+
         contract = extract_result["contract"]
         batch_id = extract_result["batch_id"]
         source_name = extract_result["source"]
@@ -361,6 +502,19 @@ def _ingest_data(
 
         Reads from bronze _tmp/ and validates. Does not publish yet.
         """
+        # Handle skipped extraction
+        if transform_result.get("skipped", False):
+            logger.info("Extraction was skipped (all dates exist), skipping validation")
+            return {
+                **transform_result,
+                "validation_result": {
+                    "is_valid": True,
+                    "checks_passed": 0,
+                    "checks_failed": 0,
+                    "failed_checks": [],
+                },
+            }
+
         contract = transform_result["contract"]
         batch_id = transform_result["batch_id"]
         source_name = transform_result["source"]
@@ -435,6 +589,17 @@ def _ingest_data(
 
         This is the final step - atomically moves data to production location.
         """
+        # Handle skipped extraction
+        if validate_result.get("skipped", False):
+            logger.info("Extraction was skipped (all dates exist), skipping load")
+            return {
+                "status": "skipped",
+                "batch_id": validate_result.get("batch_id"),
+                "records_written": 0,
+                "partitions_written": 0,
+                "partition_paths": [],
+            }
+
         batch_id = validate_result["batch_id"]
         source_name = validate_result["source"]
         resource_name = validate_result["resource"]
