@@ -151,17 +151,15 @@ class Validator:
                 logger.warning(
                     "Scan completed but no checks found. Soda may have failed to parse checks."
                 )
-                # If Soda failed to parse/execute, we should fail validation
                 raise ValueError("Soda scan failed to execute checks properly")
 
             for check in scan._checks:
-                # Log check details for debugging
                 check_name = check.name if hasattr(check, "name") else str(check)
                 check_outcome = getattr(check, "outcome", "unknown")
 
                 logger.debug(f"Check '{check_name}' outcome: {check_outcome}")
 
-                # Handle multiple outcome formats: "pass"/"fail" and "passed"/"failed"
+                check_outcome = str(check_outcome).lower()
                 if check_outcome in ("pass", "passed"):
                     checks_passed += 1
                 elif check_outcome in ("fail", "failed"):
@@ -176,9 +174,23 @@ class Validator:
                         }
                     )
                 else:
-                    # Unexpected outcome - log as warning
-                    logger.warning(
-                        f"Unexpected check outcome '{check_outcome}' for check '{check_name}'"
+                    # Unexpected outcome (None, "unknown", etc.) - treat as failure
+                    logger.error(
+                        f"Check '{check_name}' failed with unexpected outcome '{check_outcome}'. "
+                        f"This usually indicates an error during Soda check execution."
+                    )
+                    checks_failed += 1
+                    failed_checks.append(
+                        {
+                            "name": check_name,
+                            "outcome": str(check_outcome),
+                            "diagnostic": f"Unexpected outcome: {check_outcome}. "
+                            + (
+                                str(check.diagnostic)
+                                if hasattr(check, "diagnostic")
+                                else "No diagnostic available"
+                            ),
+                        }
                     )
 
             is_valid = checks_failed == 0
@@ -200,7 +212,7 @@ class Validator:
         finally:
             con.close()
 
-    def _sanitize_checks(self, checks: List[str]) -> List[str]:
+    def _sanitize_checks(self, checks: List) -> List:
         """
         Sanitize checks to work around Soda Core issues with DuckDB views.
 
@@ -208,15 +220,23 @@ class Validator:
         'AttributeError: NoneType object has no attribute column_name'.
 
         Args:
-            checks: List of raw SodaCL check strings
+            checks: List of raw SodaCL checks (strings or dicts for user-defined metrics)
 
         Returns:
-            List of sanitized check strings
+            List of sanitized checks (strings or dicts)
         """
         import re
 
         sanitized = []
         for check in checks:
+            if isinstance(check, dict):
+                sanitized.append(check)
+                continue
+
+            if not isinstance(check, str):
+                logger.warning(f"Skipping check with unexpected type: {type(check)}")
+                continue
+
             # Skip row_count check as it is a built-in metric
             if "row_count" in check:
                 sanitized.append(check)
@@ -250,13 +270,13 @@ class Validator:
 
         return sanitized
 
-    def _build_checks_yaml(self, table_name: str, checks: List[str]) -> str:
+    def _build_checks_yaml(self, table_name: str, checks: List) -> str:
         """
-        Build SodaCL YAML from list of check strings.
+        Build SodaCL YAML from list of checks.
 
         Args:
             table_name: Name of the table/dataset
-            checks: List of check expressions
+            checks: List of check expressions (strings or dicts for user-defined metrics)
 
         Returns:
             YAML string for Soda scan
@@ -265,6 +285,18 @@ class Validator:
         yaml_lines = [f"checks for {table_name}:"]
 
         for check in checks:
-            yaml_lines.append(f"  - {check}")
+            if isinstance(check, dict):
+                # The dict structure is like: {'metric_name = threshold': {'metric_name query': 'SELECT ...'}}
+                for check_expr, nested_config in check.items():
+                    yaml_lines.append(f"  - {check_expr}:")
+                    for key, value in nested_config.items():
+                        if isinstance(value, str) and "\n" in value:
+                            yaml_lines.append(f"      {key}: |")
+                            for line in value.split("\n"):
+                                yaml_lines.append(f"        {line}")
+                        else:
+                            yaml_lines.append(f"      {key}: {value}")
+            else:
+                yaml_lines.append(f"  - {check}")
 
-        return "\n".join(yaml_lines)
+        return "\n".join(yaml_lines).replace("{table}", table_name)
