@@ -139,8 +139,7 @@ class ParquetWriter:
         for key, value in partition_values.items():
             base_dir = base_dir / f"{key}={value}"
 
-        # Temporary directory for WAP
-        tmp_dir = base_dir / "_tmp"
+        tmp_dir = base_dir.parent / f"_tmp_{base_dir.name}"
         tmp_dir.mkdir(parents=True, exist_ok=True)
 
         try:
@@ -158,24 +157,29 @@ class ParquetWriter:
             old_dir = base_dir.parent / f"{base_dir.name}_old"
 
             # Step 1: If data exists, atomically rename old partition to _old
-            if final_dir.exists() and final_dir != tmp_dir:
+            if final_dir.exists():
                 final_file = final_dir / "data.parquet"
                 if final_file.exists():
+                    # Valid data exists - back it up atomically
                     if old_dir.exists():
-                        shutil.rmtree(old_dir)  # Clean up stale _old
+                        shutil.rmtree(old_dir)  # Clean up stale _old backup
                     os.rename(str(final_dir), str(old_dir))
                     logger.info(f"Renamed old partition to {old_dir}")
+                else:
+                    # Directory exists but no valid data.parquet (incomplete from failed run)
+                    shutil.rmtree(final_dir)
+                    logger.info(f"Removed incomplete partition at {final_dir}")
 
-            # Step 2: Atomically rename _tmp to final location
+            # Step 2: Atomically rename _tmp to final location (atomic OS operation)
             os.rename(str(tmp_dir), str(final_dir))
-            logger.info(f"Renamed {tmp_dir} to {final_dir}")
+            logger.info(f"Published partition: {tmp_dir} → {final_dir}")
 
-            # Step 3: Safe cleanup - delete _old
+            # Step 3: Safe cleanup - delete _old backup
             if old_dir.exists():
                 shutil.rmtree(old_dir)
                 logger.debug(f"Cleaned up old partition at {old_dir}")
 
-            logger.info(f"Published bronze partition to {final_dir}")
+            logger.info(f"Successfully published bronze partition to {final_dir}")
             return str(final_dir)
 
         except Exception as e:
