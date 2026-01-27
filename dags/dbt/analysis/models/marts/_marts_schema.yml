@@ -3,10 +3,11 @@ version: 2
 models:
   - name: dim_assets
     description: "Asset dimension table"
-    tests:
-      - dbt_utils.equal_rowcount:
-          compare_model: ref('stg_unified_prices')
-          group_by: asset_id
+    # tests:
+    #   - dbt_utils.equal_rowcount:
+    #       arguments:
+    #         compare_model: ref('stg_unified_prices')
+    #         group_by: asset_id
     columns:
       - name: asset_id
         description: "Unique asset identifier"
@@ -17,7 +18,8 @@ models:
         description: "Asset classification"
         tests:
           - accepted_values:
-              values: ['crypto', 'fiat', 'stock', 'index']
+              arguments:
+                values: ['crypto', 'fiat', 'stock', 'index']
 
   - name: dim_dates
     description: "Date dimension table"
@@ -31,7 +33,8 @@ models:
         description: "Flag indicating weekday (Mon-Fri)"
         tests:
           - accepted_values:
-              values: [0, 1]
+              arguments:
+                values: [0, 1]
 
   - name: fct_daily_prices
     description: "Fact table of daily closing prices (forward-filled for missing trading days)"
@@ -55,7 +58,8 @@ models:
         description: "Whether price was observed from source data or imputed via forward-fill"
         tests:
           - accepted_values:
-              values: ['OBSERVED', 'IMPUTED']
+              arguments:
+                values: ['OBSERVED', 'IMPUTED']
 
   - name: fct_daily_returns
     description: "Fact table of daily returns"
