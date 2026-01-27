@@ -18,7 +18,7 @@ sources:
         meta:
           source_api: "CoinGecko"
           refresh: "daily"
-          external_location: "read_parquet('/home/bdn/coingecko/data/bronze/source=coingecko/resource=btc_usd_daily/**/*.parquet', hive_partitioning=true, union_by_name=true)"
+          external_location: "read_parquet('{{ env_var('DATA_DIR', '/opt/airflow/data') }}/bronze/source=coingecko/resource=btc_usd_daily/**/*.parquet', hive_partitioning=true, union_by_name=true)"
         columns:
           - name: data_date
             description: "Trading date"
@@ -51,7 +51,7 @@ sources:
         meta:
           source_api: "Massive/Polygon"
           refresh: "daily"
-          external_location: "read_parquet('/home/bdn/coingecko/data/bronze/source=massive/resource=stocks_daily/**/*.parquet', hive_partitioning=true, union_by_name=true)"
+          external_location: "read_parquet('{{ env_var('DATA_DIR', '/opt/airflow/data') }}/bronze/source=massive/resource=stocks_daily/**/*.parquet', hive_partitioning=true, union_by_name=true)"
         columns:
           - name: ticker
             description: "Stock ticker symbol"
@@ -93,7 +93,7 @@ sources:
         meta:
           source_api: "Massive/Polygon"
           refresh: "daily"
-          external_location: "read_parquet('/home/bdn/coingecko/data/bronze/source=massive/resource=forex_daily/**/*.parquet', hive_partitioning=true, union_by_name=true)"
+          external_location: "read_parquet('{{ env_var('DATA_DIR', '/opt/airflow/data') }}/bronze/source=massive/resource=forex_daily/**/*.parquet', hive_partitioning=true, union_by_name=true)"
         columns:
           - name: ticker
             description: "Forex pair ticker (e.g., C:EURUSD)"
