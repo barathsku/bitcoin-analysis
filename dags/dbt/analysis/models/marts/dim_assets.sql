@@ -1,8 +1,4 @@
-{{
-  config(
-    materialized='table'
-  )
-}}
+{{ config(location='/home/bdn/coingecko-assessment/data/marts/dim_assets') }}
 
 select distinct
     asset_id,

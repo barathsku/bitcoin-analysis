@@ -1,8 +1,4 @@
-{{
-  config(
-    materialized='table'
-  )
-}}
+{{ config(location='/home/bdn/coingecko-assessment/data/marts/fct_daily_returns') }}
 
 select
     asset_id,

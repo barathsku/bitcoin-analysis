@@ -1,8 +1,4 @@
-{{
-  config(
-    materialized='table'
-  )
-}}
+{{ config(location='/home/bdn/coingecko-assessment/data/marts/fct_daily_prices') }}
 
 with base_prices as (
     select
