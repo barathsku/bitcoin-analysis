@@ -212,3 +212,5 @@ data/
 # Airflow-specific
 logs/
 
+# VSCode-specific
+.vscode/
