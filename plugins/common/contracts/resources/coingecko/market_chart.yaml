@@ -12,10 +12,10 @@ resource:
   method: GET
   
   path_params:
-    coin_id: "{coin_id}"
+    coin_id: "{ticker}"
     
   query_params:
-    vs_currency: "{vs_currency}"
+    vs_currency: "usd"
     days: "{days}"
     interval: daily
 

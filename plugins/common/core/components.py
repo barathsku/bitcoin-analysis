@@ -142,7 +142,7 @@ def _ingest_data(
 
     Args:
         source: Source name (e.g., 'coingecko', 'massive')
-        resource: Resource name (e.g., 'btc_usd_daily', 'stocks_daily')
+        resource: Resource name (e.g., 'market_chart', 'stocks', 'forex)
         window_start: Start date (YYYY-MM-DD) or None for data_interval_start
         window_end: End date (YYYY-MM-DD) or None for data_interval_end
         pool: Airflow pool for rate limiting (optional)
@@ -283,7 +283,7 @@ def _ingest_data(
                 )
         else:
             logger.info(
-                f"force_refetch=true, fetching all dates regardless of existing data"
+                "force_refetch=true, fetching all dates regardless of existing data"
             )
 
         # Fetch and write to staging
