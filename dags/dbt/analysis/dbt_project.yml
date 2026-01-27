@@ -38,9 +38,9 @@ models:
       +materialized: view
       +schema: intermediate
     marts:
-      +materialized: table
+      +materialized: external
       +schema: marts
     reports:
-      +materialized: table
+      +materialized: external
       +schema: reports
 
