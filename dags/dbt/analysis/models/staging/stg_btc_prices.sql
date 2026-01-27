@@ -5,7 +5,7 @@
 }}
 
 with source as (
-    select * from {{ source('bronze', 'btc_usd_daily') }}
+    select * from {{ source('bronze', 'market_chart') }}
 ),
 
 renamed as (
