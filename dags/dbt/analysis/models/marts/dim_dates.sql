@@ -1,8 +1,4 @@
-{{
-  config(
-    materialized='table'
-  )
-}}
+{{ config(location='/home/bdn/coingecko-assessment/data/marts/dim_dates') }}
 
 with all_dates as (
     select distinct data_date
@@ -18,9 +14,14 @@ date_attributes as (
         extract(dayofweek from data_date) as day_of_week,
         extract(quarter from data_date) as quarter,
         extract(dayofyear from data_date) as day_of_year,
-        -- Is trading day? (Mon-Fri)
+        -- US market holidays
         case
-            when extract(dayofweek from data_date) in (1, 7) then 0  -- Sunday=1, Saturday=7
+            when extract(dayofweek from data_date) in (0, 6) then 0
+            when data_date in (
+                select holiday_date 
+                from {{ ref('us_market_holidays') }} 
+                where market_status = 'closed'
+            ) then 0
             else 1
         end as is_trading_day,
         -- Year-to-date
@@ -43,6 +44,6 @@ select
     is_trading_day,
     is_year_start,
     strftime(data_date, '%Y-%m') as year_month,
-    strftime(data_date, '%Y-Q%q') as year_quarter
+    strftime(data_date, '%Y') || '-Q' || quarter as year_quarter
 from date_attributes
 order by data_date
