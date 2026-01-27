@@ -49,7 +49,9 @@ resource:
       - high > 0
       - low > 0
       - close > 0
-      - high >= low
+      - high_lt_low = 0:
+          high_lt_low query: |
+             SELECT COUNT(*) FROM {table} WHERE high < low
       - no_duplicate_dates = 0:
           no_duplicate_dates query: |
             SELECT COUNT(*) FROM (
