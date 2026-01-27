@@ -19,9 +19,9 @@ with DAG(
             description="Source name (e.g., coingecko, massive)",
         ),
         "resource": Param(
-            default="btc_usd_daily",
+            default="market_chart",
             type="string",
-            description="Resource name (e.g., btc_usd_daily, stocks_daily)",
+            description="Resource name (e.g., market_chart, stocks, forex)",
         ),
         "start_date": Param(
             default="2025-01-01", type="string", description="Start date (YYYY-MM-DD)"
