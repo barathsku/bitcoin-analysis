@@ -3,7 +3,9 @@ Transformer to convert raw JSON to flat records based on extraction rules.
 """
 
 import logging
-from typing import List, Dict, Any, Optional
+import hashlib
+import json
+from typing import List, Dict, Any
 from datetime import datetime
 import uuid
 
@@ -71,11 +73,13 @@ class Transformer:
             "source_name", self.contract.get("source", {}).get("name", "unknown")
         )
         ingested_at = datetime.utcnow().isoformat()
+        schema_version = self._compute_schema_version()
 
         for record in records:
             record["__batch_id"] = batch_id
             record["__source_name"] = source_name
             record["__ingested_at"] = ingested_at
+            record["__schema_version"] = schema_version
 
         logger.info(f"Transformed to {len(records)} records")
         return records
@@ -323,3 +327,28 @@ class Transformer:
             )
 
         return deduplicated
+
+    def _compute_schema_version(self) -> str:
+        """
+        Compute schema version hash from contract extract rules.
+
+        Per-resource versioning: each resource contract gets a version based on
+        the hash of its extract rules (field names + types). This allows us to
+        detect when API response structure changes.
+
+        Returns:
+            8-character hex hash of schema definition
+        """
+        # Build deterministic representation of schema
+        schema_def = {}
+        for field_name, rule in sorted(self.extract_rules.items()):
+            schema_def[field_name] = {
+                "type": rule.get("type"),
+                "partition_key": rule.get("partition_key", False),
+            }
+
+        # Compute hash
+        schema_json = json.dumps(schema_def, sort_keys=True)
+        version_hash = hashlib.md5(schema_json.encode()).hexdigest()[:8]
+
+        return version_hash

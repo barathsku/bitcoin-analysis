@@ -39,6 +39,8 @@ sources:
             description: "Source system name"
           - name: __ingested_at
             description: "Timestamp of ingestion"
+          - name: __schema_version
+            description: "Schema version hash for evolution tracking"
 
       - name: stocks_daily
         description: "Daily stock prices from Massive (Polygon)"
@@ -73,6 +75,14 @@ sources:
             description: "Trading volume"
           - name: vwap
             description: "Volume-weighted average price"
+          - name: __batch_id
+            description: "Ingestion batch identifier"
+          - name: __source_name
+            description: "Source system name"
+          - name: __ingested_at
+            description: "Timestamp of ingestion"
+          - name: __schema_version
+            description: "Schema version hash for evolution tracking"
 
       - name: forex_daily
         description: "Daily forex rates from Massive (Polygon)"
@@ -105,3 +115,11 @@ sources:
               - not_null
           - name: volume
             description: "Trading volume"
+          - name: __batch_id
+            description: "Ingestion batch identifier"
+          - name: __source_name
+            description: "Source system name"
+          - name: __ingested_at
+            description: "Timestamp of ingestion"
+          - name: __schema_version
+            description: "Schema version hash for evolution tracking"
