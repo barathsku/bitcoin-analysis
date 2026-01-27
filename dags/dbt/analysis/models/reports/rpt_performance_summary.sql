@@ -1,8 +1,4 @@
-{{
-  config(
-    materialized='table'
-  )
-}}
+{{ config(location='/home/bdn/coingecko-assessment/data/reports/rpt_performance_summary') }}
 
 with latest_date as (
     select max(data_date) as max_date
@@ -18,11 +14,11 @@ price_windows as (
         p.close_price,
         ld.max_date,
         -- Calculate lookback dates
-        dateadd('day', -7, ld.max_date) as date_7d_ago,
-        dateadd('day', -30, ld.max_date) as date_1m_ago,
-        dateadd('day', -90, ld.max_date) as date_3m_ago,
-        dateadd('day', -180, ld.max_date) as date_6m_ago,
-        dateadd('day', -365, ld.max_date) as date_1y_ago,
+        ld.max_date - INTERVAL '7 days' as date_7d_ago,
+        ld.max_date - INTERVAL '30 days' as date_1m_ago,
+        ld.max_date - INTERVAL '90 days' as date_3m_ago,
+        ld.max_date - INTERVAL '180 days' as date_6m_ago,
+        ld.max_date - INTERVAL '365 days' as date_1y_ago,
         date_trunc('year', ld.max_date) as ytd_start
     from {{ ref('fct_daily_prices') }} p
     cross join latest_date ld

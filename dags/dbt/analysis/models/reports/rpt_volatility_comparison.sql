@@ -1,8 +1,4 @@
-{{
-  config(
-    materialized='table'
-  )
-}}
+{{ config(location='/home/bdn/coingecko-assessment/data/reports/rpt_volatility_comparison') }}
 
 with daily_returns as (
     select

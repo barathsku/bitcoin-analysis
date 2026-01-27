@@ -1,8 +1,4 @@
-{{
-  config(
-    materialized='table'
-  )
-}}
+{{ config(location='/home/bdn/coingecko-assessment/data/reports/rpt_investment_simulation') }}
 
 with latest_date as (
     select max(data_date) as max_date
@@ -20,7 +16,7 @@ btc_prices as (
 year_ago_date as (
     select
         max_date,
-        dateadd('day', -365, max_date) as one_year_ago
+        max_date - INTERVAL '365 days' as one_year_ago
     from latest_date
 ),
 
@@ -63,7 +59,20 @@ lump_sum_usd as (
 monthly_dates as (
     select
         yad.max_date,
-        dateadd('month', -seq.month_offset, yad.max_date) as purchase_date,
+        CASE seq.month_offset
+            WHEN 0 THEN yad.max_date
+            WHEN 1 THEN yad.max_date - INTERVAL '1 month'
+            WHEN 2 THEN yad.max_date - INTERVAL '2 months'
+            WHEN 3 THEN yad.max_date - INTERVAL '3 months'
+            WHEN 4 THEN yad.max_date - INTERVAL '4 months'
+            WHEN 5 THEN yad.max_date - INTERVAL '5 months'
+            WHEN 6 THEN yad.max_date - INTERVAL '6 months'
+            WHEN 7 THEN yad.max_date - INTERVAL '7 months'
+            WHEN 8 THEN yad.max_date - INTERVAL '8 months'
+            WHEN 9 THEN yad.max_date - INTERVAL '9 months'
+            WHEN 10 THEN yad.max_date - INTERVAL '10 months'
+            WHEN 11 THEN yad.max_date - INTERVAL '11 months'
+        END as purchase_date,
         seq.month_offset
     from year_ago_date yad
     cross join (
