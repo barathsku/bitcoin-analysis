@@ -1,0 +1,25 @@
+holiday_date,holiday_name,market_status
+2025-01-01,New Year's Day,closed
+2025-01-20,Martin Luther King Jr. Day,closed
+2025-02-17,Presidents' Day,closed
+2025-04-18,Good Friday,closed
+2025-05-26,Memorial Day,closed
+2025-06-19,Juneteenth,closed
+2025-07-04,Independence Day,closed
+2025-09-01,Labor Day,closed
+2025-11-27,Thanksgiving Day,closed
+2025-11-28,Day After Thanksgiving,early_close
+2025-12-24,Christmas Eve,early_close
+2025-12-25,Christmas Day,closed
+2026-01-01,New Year's Day,closed
+2026-01-19,Martin Luther King Jr. Day,closed
+2026-02-16,Presidents' Day,closed
+2026-04-03,Good Friday,closed
+2026-05-25,Memorial Day,closed
+2026-06-19,Juneteenth Holiday,closed
+2026-07-03,Independence Day Observed,closed
+2026-09-07,Labor Day,closed
+2026-11-26,Thanksgiving Day,closed
+2026-11-27,Thanksgiving Early Close,early_close
+2026-12-24,Christmas Early Close,early_close
+2026-12-25,Christmas Day,closed
