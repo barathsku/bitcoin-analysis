@@ -3,7 +3,7 @@ analysis:
   outputs:
     dev:
       type: duckdb
-      path: "{{ env_var('DBT_DUCKDB_PATH', '/opt/airflow/data/analysis.duckdb') }}"
+      path: "{{ env_var('DBT_DUCKDB_PATH', '/home/bdn/coingecko-assessment/data/analysis.duckdb') }}"
       threads: 4
       schema: main
 
