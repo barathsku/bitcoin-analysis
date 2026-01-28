@@ -1,6 +1,6 @@
 {{
   config(
-    materialized='view'
+    location='/home/bdn/coingecko-assessment/data/intermediate/int_btc_relative_perf'
   )
 }}
 
