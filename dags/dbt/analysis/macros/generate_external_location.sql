@@ -1,5 +1,6 @@
 {% macro generate_external_location() %}
-  {%- set schema = config.get('schema', 'marts') -%}
+  {%- set subfolder = model.fqn[1] -%}
   {%- set model_name = this.name -%}
-  data/{{ schema }}/{{ model_name }}
-{% endmacro %}
+  {%- set base_path = var('data_path') -%}
+  {{ base_path }}/{{ subfolder }}/{{ model_name }}.parquet
+{%- endmacro %}
