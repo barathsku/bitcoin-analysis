@@ -1,4 +1,4 @@
-{{ config(location='/home/bdn/coingecko-assessment/data/marts/dim_dates') }}
+{{ config(location=generate_external_location()) }}
 
 with all_dates as (
     select distinct data_date

@@ -1,4 +1,4 @@
-{{ config(location='/home/bdn/coingecko-assessment/data/marts/dim_assets') }}
+{{ config(location=generate_external_location()) }}
 
 select distinct
     asset_id,

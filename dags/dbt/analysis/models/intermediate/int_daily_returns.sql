@@ -1,8 +1,4 @@
-{{
-  config(
-    location='/home/bdn/coingecko-assessment/data/intermediate/int_daily_returns'
-  )
-}}
+{{ config(location=generate_external_location()) }}
 
 with price_data as (
     select

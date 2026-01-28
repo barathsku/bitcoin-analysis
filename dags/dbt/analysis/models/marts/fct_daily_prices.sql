@@ -1,4 +1,4 @@
-{{ config(location='/home/bdn/coingecko-assessment/data/marts/fct_daily_prices') }}
+{{ config(location=generate_external_location()) }}
 
 with base_prices as (
     select

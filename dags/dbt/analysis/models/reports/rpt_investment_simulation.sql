@@ -1,4 +1,4 @@
-{{ config(location='/home/bdn/coingecko-assessment/data/reports/rpt_investment_simulation') }}
+{{ config(location=generate_external_location()) }}
 
 with latest_date as (
     select max(data_date) as max_date

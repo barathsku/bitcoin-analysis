@@ -1,8 +1,4 @@
-{{
-  config(
-    location='/home/bdn/coingecko-assessment/data/intermediate/int_data_gaps'
-  )
-}}
+{{ config(location=generate_external_location()) }}
 
 {#
   Detects missing dates per asset by comparing actual data dates

@@ -1,4 +1,4 @@
-{{ config(location='/home/bdn/coingecko-assessment/data/marts/fct_daily_returns') }}
+{{ config(location=generate_external_location()) }}
 
 select
     asset_id,

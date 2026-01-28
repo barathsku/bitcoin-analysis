@@ -1,4 +1,4 @@
-{{ config(location='/home/bdn/coingecko-assessment/data/reports/rpt_volatility_comparison') }}
+{{ config(location=generate_external_location()) }}
 
 with daily_returns as (
     select

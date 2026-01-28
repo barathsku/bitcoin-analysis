@@ -1,8 +1,4 @@
-{{
-  config(
-    location='/home/bdn/coingecko-assessment/data/intermediate/int_btc_relative_perf'
-  )
-}}
+{{ config(location=generate_external_location()) }}
 
 with asset_returns as (
     select

@@ -1,8 +1,4 @@
-{{
-  config(
-    location='/home/bdn/coingecko-assessment/data/intermediate/int_rolling_metrics'
-  )
-}}
+{{ config(location=generate_external_location()) }}
 
 with returns as (
     select * from {{ ref('int_daily_returns') }}

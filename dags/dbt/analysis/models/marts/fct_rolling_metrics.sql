@@ -1,4 +1,4 @@
-{{ config(location='/home/bdn/coingecko-assessment/data/marts/fct_rolling_metrics') }}
+{{ config(location=generate_external_location()) }}
 
 select
     asset_id,
