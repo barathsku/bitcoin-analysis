@@ -13,14 +13,16 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['7D', '1M', '3M', '6M', 'YTD', '1Y']
+              arguments:
+                values: ['7D', '1M', '3M', '6M', 'YTD', '1Y']
       - name: return_pct
         description: "Total return percentage for the period"
       - name: vs_btc_status
         description: "Whether asset outperformed, matched, or underperformed BTC"
         tests:
           - accepted_values:
-              values: ['Outperformed', 'Matched', 'Underperformed']
+              arguments:
+                values: ['Outperformed', 'Matched', 'Underperformed']
 
   - name: rpt_investment_simulation
     description: "Investment simulation comparing $1K lump sum vs $100/month DCA strategy"

@@ -44,8 +44,9 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('dim_assets')
-              field: asset_id
+              arguments:
+                to: ref('dim_assets')
+                field: asset_id
       - name: data_date
         description: "Price date"
         tests:
