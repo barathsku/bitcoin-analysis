@@ -14,7 +14,8 @@ models:
         description: "Type of asset (crypto, fiat, stock, index)"
         tests:
           - accepted_values:
-              values: ['crypto', 'fiat', 'stock', 'index']
+              arguments:
+                values: ['crypto', 'fiat', 'stock', 'index']
       - name: missing_date
         description: "Date that is missing from source data"
         tests:
@@ -23,6 +24,7 @@ models:
         description: "Whether the missing date falls on a trading day (Mon-Fri)"
         tests:
           - accepted_values:
-              values: [0, 1]
+              arguments:
+                values: [0, 1]
       - name: detected_at
         description: "Timestamp when the gap was detected"
