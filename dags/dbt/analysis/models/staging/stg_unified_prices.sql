@@ -1,8 +1,4 @@
-{{
-  config(
-    materialized='view'
-  )
-}}
+{{ config(location=generate_external_location()) }}
 
 -- Add USD as the cash baseline (constant at 1.0)
 with usd_baseline as (
