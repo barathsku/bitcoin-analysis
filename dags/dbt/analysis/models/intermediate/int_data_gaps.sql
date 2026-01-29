@@ -24,7 +24,7 @@ actual_dates as (
     select distinct
         asset_id,
         data_date
-    from {{ ref('stg_unified_prices') }}
+    from {{ ref('int_unified_prices') }}
 ),
 
 gaps as (

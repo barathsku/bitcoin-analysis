@@ -2,7 +2,7 @@
 
 with all_dates as (
     select distinct data_date
-    from {{ ref('stg_unified_prices') }}
+    from {{ ref('int_unified_prices') }}
 ),
 
 date_attributes as (
@@ -19,7 +19,7 @@ date_attributes as (
             when extract(dayofweek from data_date) in (0, 6) then 0
             when data_date in (
                 select holiday_date 
-                from {{ ref('us_market_holidays') }} 
+                from {{ ref('stg_static__us_market_holidays') }} 
                 where market_status = 'closed'
             ) then 0
             else 1

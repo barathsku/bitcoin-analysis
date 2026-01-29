@@ -9,7 +9,7 @@ with price_data as (
         close_price,
         lag(close_price) over (partition by asset_id order by data_date) as prev_close_price,
         lag(data_date) over (partition by asset_id order by data_date) as prev_date
-    from {{ ref('stg_unified_prices') }}
+    from {{ ref('int_unified_prices') }}
 ),
 
 returns_calc as (

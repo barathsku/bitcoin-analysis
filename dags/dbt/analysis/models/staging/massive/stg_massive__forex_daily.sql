@@ -1,7 +1,7 @@
 {{ config(location=generate_external_location()) }}
 
 with source as (
-    select * from {{ source('bronze', 'forex_daily') }}
+    select * from {{ source('massive', 'forex_daily') }}
 ),
 
 renamed as (

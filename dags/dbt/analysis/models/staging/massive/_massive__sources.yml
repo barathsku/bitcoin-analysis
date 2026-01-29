@@ -1,48 +1,14 @@
 version: 2
 
 sources:
-  - name: bronze
-    description: "Raw parquet files from API ingestion pipeline"
+  - name: massive
+    description: "Massive (Polygon) API Data"
     freshness:
       warn_after: {count: 2, period: day}
-      error_after: {count: 3, period: day}
+      error_after: {count: 4, period: day}
     meta:
       owner: "barath"
     tables:
-      - name: market_chart
-        description: "Bitcoin daily prices from CoinGecko"
-        loaded_at_field: "__ingested_at"
-        freshness:
-          warn_after: {count: 2, period: day}
-          error_after: {count: 3, period: day}
-        meta:
-          source_api: "CoinGecko"
-          refresh: "daily"
-          external_location: "read_parquet('{{ env_var('DATA_DIR', '/home/bdn/coingecko-assessment/data') }}/bronze/source=coingecko/resource=market_chart/**/*.parquet', hive_partitioning=true, union_by_name=true)"
-        columns:
-          - name: data_date
-            description: "Trading date"
-            tests:
-              - not_null
-              # Temporarily disabled until duplicate dates issue is resolved in bronze layer
-              # - unique
-          - name: price_usd
-            description: "BTC closing price in USD"
-            tests:
-              - not_null
-          - name: market_cap_usd
-            description: "BTC market capitalization in USD"
-          - name: volume_24h_usd
-            description: "24-hour trading volume in USD"
-          - name: __batch_id
-            description: "Ingestion batch identifier"
-          - name: __source_name
-            description: "Source system name"
-          - name: __ingested_at
-            description: "Timestamp of ingestion"
-          - name: __schema_version
-            description: "Schema version hash for evolution tracking"
-
       - name: stocks_daily
         description: "Daily stock prices from Massive (Polygon)"
         loaded_at_field: "__ingested_at"
@@ -52,7 +18,7 @@ sources:
         meta:
           source_api: "Massive/Polygon"
           refresh: "daily"
-          external_location: "read_parquet('{{ env_var('DATA_DIR', '/home/bdn/coingecko-assessment/data') }}/bronze/source=massive/resource=stocks/**/*.parquet', hive_partitioning=true, union_by_name=true)"
+          external_location: "read_parquet('{{ env_var('DBT_DATA_PATH', '../../../data') }}/bronze/source=massive/resource=stocks/**/*.parquet', hive_partitioning=true, union_by_name=true)"
         columns:
           - name: ticker
             description: "Stock ticker symbol"
@@ -94,7 +60,7 @@ sources:
         meta:
           source_api: "Massive/Polygon"
           refresh: "daily"
-          external_location: "read_parquet('{{ env_var('DATA_DIR', '/home/bdn/coingecko-assessment/data') }}/bronze/source=massive/resource=forex/**/*.parquet', hive_partitioning=true, union_by_name=true)"
+          external_location: "read_parquet('{{ env_var('DBT_DATA_PATH', '../../../data') }}/bronze/source=massive/resource=forex/**/*.parquet', hive_partitioning=true, union_by_name=true)"
         columns:
           - name: ticker
             description: "Forex pair ticker (e.g., C:EURUSD)"

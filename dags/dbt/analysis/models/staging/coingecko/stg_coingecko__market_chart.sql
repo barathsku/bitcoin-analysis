@@ -1,7 +1,7 @@
 {{ config(location=generate_external_location()) }}
 
 with source as (
-    select * from {{ source('bronze', 'market_chart') }}
+    select * from {{ source('coingecko', 'market_chart') }}
 ),
 
 renamed as (

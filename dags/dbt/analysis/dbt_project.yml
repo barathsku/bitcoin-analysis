@@ -15,7 +15,7 @@ clean-targets:
   - "dbt_packages"
 
 vars:
-  data_path: "{{ env_var('AIRFLOW_HOME', '/opt/airflow') }}/data"
+  data_path: "{{ env_var('DBT_DATA_PATH', '../../../data') }}"
 
 models:
   analysis:

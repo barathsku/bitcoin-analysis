@@ -17,7 +17,7 @@ with usd_baseline as (
         null as volume_usd,
         'synthetic' as __batch_id,
         current_timestamp as __ingested_at
-    from {{ ref('stg_btc_prices') }}  -- Use BTC dates as the master calendar
+    from {{ ref('stg_coingecko__market_chart') }}  -- Use BTC dates as the master calendar
 ),
 
 -- Union all price data
@@ -38,7 +38,7 @@ unified as (
         volume_usd,
         __batch_id,
         __ingested_at
-    from {{ ref('stg_btc_prices') }}
+    from {{ ref('stg_coingecko__market_chart') }}
 
     union all
 
@@ -58,7 +58,7 @@ unified as (
         null as volume_usd,
         __batch_id,
         __ingested_at
-    from {{ ref('stg_stock_prices') }}
+    from {{ ref('stg_massive__stocks_daily') }}
 
     union all
 
@@ -78,7 +78,7 @@ unified as (
         null as volume_usd,
         __batch_id,
         __ingested_at
-    from {{ ref('stg_forex_rates') }}
+    from {{ ref('stg_massive__forex_daily') }}
 
     union all
 
