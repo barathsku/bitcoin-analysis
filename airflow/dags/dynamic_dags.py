@@ -9,9 +9,10 @@ This file auto-discovers and generates DAGs based on the asset catalog:
 
 from datetime import datetime, timedelta
 from typing import Dict, List
+
 from common.core.dag_generator import generate_ingestion_dag
 from common.core.asset_catalog import AssetCatalog
-from common.core.contract_loader import ContractLoader
+from common.contracts.loader import ContractLoader
 
 # Default arguments for all generated DAGs
 DEFAULT_ARGS = {
@@ -61,9 +62,17 @@ def auto_discover_dag_configs() -> List[Dict]:
         dag_id = f"{source}_{resource}_ingestion"
 
         # Load metadata from contracts
-        source_display = contract_loader.get_source_display_name(source)
-        resource_display = contract_loader.get_resource_display_name(source, resource)
-        resource_tags = contract_loader.get_resource_tags(source, resource)
+        try:
+            contract = contract_loader.load(source, resource)
+            source_display = contract["source"].get("display_name", source.title())
+            resource_display = contract["resource"].get(
+                "display_name", resource.replace("_", " ").title()
+            )
+            resource_tags = contract["resource"].get("tags", [])
+        except Exception as _:
+            source_display = source.title()
+            resource_display = resource.replace("_", " ").title()
+            resource_tags = []
 
         # Build tags: base tags + resource-specific tags
         tags = ["ingestion", source, resource] + resource_tags
