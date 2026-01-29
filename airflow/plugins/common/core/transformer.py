@@ -6,7 +6,7 @@ import logging
 import hashlib
 import json
 from typing import List, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 logger = logging.getLogger(__name__)
@@ -72,7 +72,7 @@ class Transformer:
         source_name = context.get(
             "source_name", self.contract.get("source", {}).get("name", "unknown")
         )
-        ingested_at = datetime.utcnow().isoformat()
+        ingested_at = datetime.now(timezone.utc).isoformat()
         schema_version = self._compute_schema_version()
 
         for record in records:

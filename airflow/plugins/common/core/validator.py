@@ -6,6 +6,7 @@ import logging
 from typing import List, Dict, Any
 
 from soda.scan import Scan
+import duckdb
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +94,6 @@ class Validator:
         )
 
         # Setup DuckDB connection
-        import duckdb
 
         con = duckdb.connect(database=":memory:")
 

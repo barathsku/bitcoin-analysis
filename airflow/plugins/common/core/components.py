@@ -3,7 +3,6 @@ Shared Airflow components for data ingestion pipeline.
 """
 
 import logging
-import uuid
 from datetime import datetime, timedelta, date
 from typing import Optional, Dict, Any
 from collections import defaultdict
@@ -266,8 +265,6 @@ def _ingest_data(
         batch_id = extract_result["batch_id"]
         source_name = extract_result["source"]
         resource_name = extract_result["resource"]
-        start_date_str = extract_result["start_date"]
-        end_date_str = extract_result["end_date"]
 
         logger.info(f"Transforming {source_name}/{resource_name}")
 
@@ -280,11 +277,6 @@ def _ingest_data(
         # Initialize components
         transformer = Transformer(contract)
         writer = ParquetWriter()
-        adapter = get_adapter(source_name, resource_name, contract)
-
-        # Parse dates
-        start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
-        end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
 
         # Read staging files and transform
         all_records = []

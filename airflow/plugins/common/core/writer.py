@@ -7,7 +7,7 @@ import json
 import logging
 import shutil
 from typing import List, Dict, Any, Optional
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from pathlib import Path
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -68,7 +68,7 @@ class ParquetWriter:
             Path to written file
         """
         if ingestion_date is None:
-            ingestion_date = datetime.utcnow().date().isoformat()
+            ingestion_date = datetime.now(timezone.utc).date().isoformat()
 
         # Build path: staging/source={source}/ingestion_date={date}/batch_id={uuid}/
         staging_dir = (
@@ -184,7 +184,7 @@ class ParquetWriter:
         base_dir = self.bronze_path / f"source={source}" / f"resource={resource}"
         for key, value in partition_values.items():
             base_dir = base_dir / f"{key}={value}"
-        
+
         tmp_dir = Path(tmp_path)
         final_dir = base_dir
         old_dir = base_dir.parent / f"{base_dir.name}_old"
