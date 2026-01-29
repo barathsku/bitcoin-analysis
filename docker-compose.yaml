@@ -6,23 +6,28 @@ services:
     volumes:
       - ./data:/opt/airflow/data
       - ./dbt:/opt/airflow/dbt
+      - ./docs:/opt/airflow/docs
 
   airflow-scheduler:
     volumes:
       - ./data:/opt/airflow/data
       - ./dbt:/opt/airflow/dbt
+      - ./docs:/opt/airflow/docs
 
   airflow-worker:
     volumes:
       - ./data:/opt/airflow/data
       - ./dbt:/opt/airflow/dbt
+      - ./docs:/opt/airflow/docs
 
   airflow-triggerer:
     volumes:
       - ./data:/opt/airflow/data
       - ./dbt:/opt/airflow/dbt
+      - ./docs:/opt/airflow/docs
 
   airflow-cli:
     volumes:
       - ./data:/opt/airflow/data
       - ./dbt:/opt/airflow/dbt
+      - ./docs:/opt/airflow/docs

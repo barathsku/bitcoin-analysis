@@ -5,3 +5,5 @@ pyyaml>=6.0
 soda-core-duckdb>=3.3.0
 psycopg2-binary>=2.9.0
 sqlalchemy>=2.0.0
+dbt-duckdb==1.10.0
+dbt-artifacts-parser

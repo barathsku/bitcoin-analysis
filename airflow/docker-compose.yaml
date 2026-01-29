@@ -73,7 +73,7 @@ x-airflow-common:
     AIRFLOW__SCHEDULER__RELOAD_ON_PLUGIN_CHANGE: 'true'
     # WARNING: Use _PIP_ADDITIONAL_REQUIREMENTS option ONLY for a quick checks
     # for other purpose (development, test and especially production usage) build/extend Airflow image.
-    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-requests pandas pyarrow pyyaml soda-core-duckdb psycopg2-binary sqlalchemy}
+    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-requests pandas pyarrow pyyaml soda-core-duckdb psycopg2-binary sqlalchemy dbt-duckdb==1.10.0 dbt-artifacts-parser}
     # The following line can be used to set a custom config file, stored in the local config folder
     # If you want to use it, outcomment it and replace airflow.cfg with the name of your config file
     # AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
