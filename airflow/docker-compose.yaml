@@ -60,6 +60,8 @@ x-airflow-common:
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     MASSIVE_API_KEY: ${MASSIVE_API_KEY}
     COINGECKO_API_KEY: ${COINGECKO_API_KEY}
+    AIRFLOW_HOME: /opt/airflow
+    DBT_DATA_PATH: /opt/airflow/data
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
     # yamllint disable rule:line-length
