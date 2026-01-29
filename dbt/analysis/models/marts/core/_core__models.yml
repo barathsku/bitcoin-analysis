@@ -3,17 +3,16 @@ version: 2
 models:
   - name: dim_assets
     description: "Asset dimension table"
-    # tests:
-    #   - dbt_utils.equal_rowcount:
-    #       arguments:
-    #         compare_model: ref('int_market__unified_prices')
-    #         group_by: asset_id
+    meta:
+      owner: "barath"
     columns:
       - name: asset_id
         description: "Unique asset identifier"
         tests:
           - not_null
           - unique
+      - name: asset_name
+        description: "Full name of the asset"
       - name: asset_type
         description: "Asset classification"
         tests:
@@ -22,22 +21,44 @@ models:
                 values: ['crypto', 'fiat', 'stock', 'index']
 
   - name: dim_dates
-    description: "Date dimension table"
+    description: "Date dimension table generated from date spine"
+    meta:
+      owner: "barath"
     columns:
       - name: date
         description: "Calendar date"
         tests:
           - not_null
           - unique
+      - name: year
+        description: "Year of the date"
+      - name: month
+        description: "Month of the date (1-12)"
+      - name: day
+        description: "Day of the month"
+      - name: day_of_week
+        description: "Day of the week (1=Monday, 7=Sunday)"
+      - name: quarter
+        description: "Quarter of the year (1-4)"
+      - name: day_of_year
+        description: "Day of the year (1-366)"
       - name: is_trading_day
         description: "Flag indicating weekday (Mon-Fri)"
         tests:
           - accepted_values:
               arguments:
                 values: [0, 1]
+      - name: is_year_start
+        description: "Flag indicating if date is first day of year"
+      - name: year_month
+        description: "Year and month (YYYY-MM)"
+      - name: year_quarter
+        description: "Year and quarter (YYYY-Q#)"
 
   - name: fct_daily_prices
     description: "Fact table of daily closing prices (forward-filled for missing trading days)"
+    meta:
+      owner: "barath"
     columns:
       - name: asset_id
         description: "Asset identifier"
@@ -47,6 +68,10 @@ models:
               arguments:
                 to: ref('dim_assets')
                 field: asset_id
+      - name: asset_name
+        description: "Asset name"
+      - name: asset_type
+        description: "Asset type"
       - name: data_date
         description: "Price date"
         tests:
@@ -64,15 +89,23 @@ models:
 
   - name: fct_daily_returns
     description: "Fact table of daily returns"
+    meta:
+      owner: "barath"
     columns:
       - name: asset_id
         description: "Asset identifier"
         tests:
           - not_null
+      - name: asset_name
+        description: "Asset name"
+      - name: asset_type
+        description: "Asset type"
       - name: data_date
         description: "Return date"
         tests:
           - not_null
+      - name: close_price
+        description: "Closing price on the return date"
       - name: daily_return
         description: "Daily return percentage (decimal)"
 

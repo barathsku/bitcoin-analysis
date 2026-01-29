@@ -1,0 +1,80 @@
+version: 2
+
+models:
+  - name: stg_massive__forex_daily
+    description: "Daily forex rates from Massive (Polygon)"
+    meta:
+      owner: "barath"
+    columns:
+      - name: asset_id
+        description: "Currency identifier (e.g., EUR)"
+        tests:
+          - not_null
+      - name: data_date
+        description: "Trading date"
+        tests:
+          - not_null
+      - name: close_price
+        description: "Closing exchange rate"
+        tests:
+          - not_null
+      - name: open_price
+        description: "Opening exchange rate"
+      - name: high_price
+        description: "Highest exchange rate for the day"
+      - name: low_price
+        description: "Lowest exchange rate for the day"
+      - name: volume
+        description: "Trading volume"
+      - name: asset_type
+        description: "Asset type (fiat)"
+        tests:
+          - accepted_values:
+              values: ['fiat']
+      - name: asset_name
+        description: "Currency name"
+      - name: raw_ticker
+        description: "Original ticker from source (e.g. C:EURUSD)"
+      - name: __batch_id
+        description: "Ingestion batch identifier"
+      - name: __ingested_at
+        description: "Timestamp of ingestion"
+
+  - name: stg_massive__stocks_daily
+    description: "Daily stock prices from Massive (Polygon)"
+    meta:
+      owner: "barath"
+    columns:
+      - name: asset_id
+        description: "Stock ticker symbol (e.g. AAPL)"
+        tests:
+          - not_null
+      - name: data_date
+        description: "Trading date"
+        tests:
+          - not_null
+      - name: close_price
+        description: "Closing price"
+        tests:
+          - not_null
+      - name: open_price
+        description: "Opening price"
+      - name: high_price
+        description: "Highest price for the day"
+      - name: low_price
+        description: "Lowest price for the day"
+      - name: volume
+        description: "Trading volume"
+      - name: vwap
+        description: "Volume-weighted average price"
+      - name: asset_type
+        description: "Asset type (stock, index)"
+        tests:
+          - accepted_values:
+              values: ['stock', 'index', 'unknown']
+      - name: asset_name
+        description: "Company or Index name"
+      - name: __batch_id
+        description: "Ingestion batch identifier"
+      - name: __ingested_at
+        description: "Timestamp of ingestion"

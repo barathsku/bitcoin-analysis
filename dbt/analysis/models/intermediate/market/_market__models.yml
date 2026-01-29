@@ -1,6 +1,147 @@
 version: 2
 
 models:
+  - name: int_market__unified_prices
+    description: "Unified price table for all assets (Crypto, Stocks, Forex) including a synthetic USD baseline"
+    meta:
+      owner: "barath"
+    columns:
+      - name: asset_id
+        description: "Unique asset identifier"
+        tests:
+          - not_null
+      - name: asset_name
+        description: "Full name of the asset"
+      - name: asset_type
+        description: "Type of asset (crypto, fiat, stock, index)"
+      - name: data_date
+        description: "Trading date"
+        tests:
+          - not_null
+      - name: close_price
+        description: "Closing price or rate"
+        tests:
+          - not_null
+      - name: open_price
+        description: "Opening price or rate"
+      - name: high_price
+        description: "Highest price or rate"
+      - name: low_price
+        description: "Lowest price or rate"
+      - name: volume
+        description: "Trading volume"
+      - name: vwap
+        description: "Volume-weighted average price"
+      - name: market_cap_usd
+        description: "Market capitalization in USD (Crypto only)"
+      - name: volume_usd
+        description: "Trading volume in USD (Crypto only)"
+      - name: __batch_id
+        description: "Ingestion batch identifier"
+      - name: __ingested_at
+        description: "Timestamp of ingestion"
+
+  - name: int_market__daily_returns
+    description: "Calculates daily returns for each asset"
+    meta:
+      owner: "barath"
+    columns:
+      - name: asset_id
+        description: "Asset identifier"
+        tests:
+          - not_null
+      - name: asset_name
+        description: "Asset name"
+      - name: asset_type
+        description: "Asset type"
+      - name: data_date
+        description: "Trading date"
+        tests:
+          - not_null
+      - name: close_price
+        description: "Closing price"
+        tests:
+          - not_null
+      - name: prev_close_price
+        description: "Previous trading day's closing price"
+      - name: daily_return
+        description: "Percentage daily return (decimal)"
+      - name: days_gap
+        description: "Number of days since previous observation"
+
+  - name: int_market__btc_relative_perf
+    description: "Compares asset performance relative to Bitcoin"
+    meta:
+      owner: "barath"
+    columns:
+      - name: asset_id
+        description: "Asset identifier"
+        tests:
+          - not_null
+      - name: asset_name
+        description: "Asset name"
+      - name: asset_type
+        description: "Asset type"
+      - name: data_date
+        description: "Trading date"
+        tests:
+          - not_null
+      - name: asset_return
+        description: "Asset daily return"
+      - name: btc_daily_return
+        description: "Bitcoin daily return"
+      - name: return_vs_btc
+        description: "Difference between asset return and BTC return (percentage points)"
+      - name: outperformed_btc_flag
+        description: "1 if asset outperformed BTC, 0 otherwise"
+        tests:
+          - accepted_values:
+              values: [0, 1]
+
+  - name: int_market__rolling_metrics
+    description: "Calculates rolling statistics (average return, volatility) over various windows"
+    meta:
+      owner: "barath"
+    columns:
+      - name: asset_id
+        description: "Asset identifier"
+        tests:
+          - not_null
+      - name: asset_name
+        description: "Asset name"
+      - name: asset_type
+        description: "Asset type"
+      - name: data_date
+        description: "Trading date"
+        tests:
+          - not_null
+      - name: close_price
+        description: "Closing price"
+      - name: daily_return
+        description: "Daily return percentage"
+      - name: avg_return_7d
+        description: "7-day rolling average return"
+      - name: volatility_7d
+        description: "7-day rolling volatility (stddev)"
+      - name: obs_count_7d
+        description: "Count of observations in 7-day window"
+      - name: avg_return_14d
+        description: "14-day rolling average return"
+      - name: volatility_14d
+        description: "14-day rolling volatility (stddev)"
+      - name: obs_count_14d
+        description: "Count of observations in 14-day window"
+      - name: avg_return_30d
+        description: "30-day rolling average return"
+      - name: volatility_30d
+        description: "30-day rolling volatility (stddev)"
+      - name: obs_count_30d
+        description: "Count of observations in 30-day window"
+      - name: first_price
+        description: "First observed price for the asset"
+      - name: cumulative_return_from_start
+        description: "Cumulative return since the first observation"
+
   - name: int_market__data_gaps
     description: "Identifies missing dates in source data per asset within the observed date range"
     meta:

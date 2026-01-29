@@ -1,0 +1,19 @@
+version: 2
+
+models:
+  - name: stg_static__us_market_holidays
+    description: "Static list of US market holidays"
+    meta:
+      owner: "barath"
+    columns:
+      - name: holiday_date
+        description: "Date of the holiday"
+        tests:
+          - not_null
+          - unique
+      - name: holiday_name
+        description: "Name of the holiday"
+      - name: market_status
+        description: "Status of the market (e.g., Closed, Early Close)"
+        tests:
+          - not_null

@@ -3,25 +3,59 @@ version: 2
 models:
   - name: fct_rolling_metrics
     description: "Fact table with rolling performance metrics"
+    meta:
+      owner: "barath"
     columns:
       - name: asset_id
         description: "Asset identifier"
         tests:
           - not_null
+      - name: asset_name
+        description: "Asset name"
+      - name: asset_type
+        description: "Asset type"
       - name: data_date
         description: "Calculation date"
         tests:
           - not_null
+      - name: close_price
+        description: "Closing price"
+      - name: daily_return
+        description: "daily_return"
+      - name: avg_return_7d
+        description: "7-day rolling average return"
+      - name: volatility_7d
+        description: "7-day rolling volatility"
+      - name: obs_count_7d
+        description: "Observation count for 7-day window"
+      - name: avg_return_14d
+        description: "14-day rolling average return"
+      - name: volatility_14d
+        description: "14-day rolling volatility"
+      - name: obs_count_14d
+        description: "Observation count for 14-day window"
+      - name: avg_return_30d
+        description: "30-day rolling average return"
       - name: volatility_30d
         description: "30-day rolling volatility"
+      - name: obs_count_30d
+        description: "Observation count for 30-day window"
+      - name: cumulative_return_from_start
+        description: "Cumulative return from start"
 
   - name: rpt_performance_summary
     description: "Performance summary showing asset returns across multiple time windows compared to Bitcoin"
+    meta:
+      owner: "barath"
     columns:
       - name: asset_id
         description: "Asset identifier"
         tests:
           - not_null
+      - name: asset_name
+        description: "Asset name"
+      - name: asset_type
+        description: "Asset type"
       - name: period
         description: "Time period (7D, 1M, 3M, 6M, YTD, 1Y)"
         tests:
@@ -29,17 +63,29 @@ models:
           - accepted_values:
               arguments:
                 values: ['7D', '1M', '3M', '6M', 'YTD', '1Y']
+      - name: start_price
+        description: "Price at the start of the period"
+      - name: current_price
+        description: "Price at the end of the period"
       - name: return_pct
         description: "Total return percentage for the period"
+      - name: btc_return_pct
+        description: "Bitcoin return percentage for the same period"
+      - name: return_vs_btc
+        description: "Performance difference vs Bitcoin (percentage points)"
       - name: vs_btc_status
         description: "Whether asset outperformed, matched, or underperformed BTC"
         tests:
           - accepted_values:
               arguments:
                 values: ['Outperformed', 'Matched', 'Underperformed']
+      - name: rank_by_return
+        description: "Rank of asset by return within the period"
 
   - name: rpt_investment_simulation
     description: "Investment simulation comparing $1K lump sum vs $100/month DCA strategy"
+    meta:
+      owner: "barath"
     columns:
       - name: asset
         description: "Asset (USD or BTC)"
@@ -53,19 +99,41 @@ models:
         description: "Total amount invested in USD"
         tests:
           - not_null
+      - name: avg_purchase_price
+        description: "Average purchase price of the asset"
+      - name: current_price
+        description: "Current price of the asset"
+      - name: btc_amount
+        description: "Total amount of BTC accumulated"
       - name: current_value_usd
         description: "Current portfolio value in USD"
         tests:
           - not_null
+      - name: profit_loss_usd
+        description: "Profit or loss in USD"
+      - name: return_pct
+        description: "Return on investment percentage"
 
   - name: rpt_volatility_comparison
     description: "Volatility analysis comparing daily and annualized volatility across assets"
+    meta:
+      owner: "barath"
     columns:
       - name: asset_id
         description: "Asset identifier"
         tests:
           - not_null
           - unique
+      - name: asset_name
+        description: "Asset name"
+      - name: asset_type
+        description: "Asset type"
+      - name: category
+        description: "Asset category"
+      - name: num_observations
+        description: "Number of daily observations"
+      - name: avg_daily_return_pct
+        description: "Average daily return percentage"
       - name: daily_volatility_pct
         description: "Standard deviation of daily returns (percentage)"
         tests:
@@ -74,19 +142,33 @@ models:
         description: "Annualized volatility (percentage)"
         tests:
           - not_null
+      - name: min_daily_return_pct
+        description: "Minimum daily return percentage"
+      - name: max_daily_return_pct
+        description: "Maximum daily return percentage"
+      - name: volatility_rank
+        description: "Rank of asset by volatility (1 = highest)"
 
   - name: rpt_correlation
     description: "Correlation matrix of asset returns"
+    meta:
+      owner: "barath"
     columns:
       - name: asset_a
         description: "First asset in the pair"
         tests:
           - not_null
+      - name: asset_a_name
+        description: "Name of the first asset"
       - name: asset_b
         description: "Second asset in the pair"
         tests:
           - not_null
+      - name: asset_b_name
+        description: "Name of the second asset"
       - name: correlation
         description: "Pearson correlation coefficient"
         tests:
           - not_null
+      - name: observation_count
+        description: "Number of overlapping trading days used for correlation"

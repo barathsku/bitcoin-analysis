@@ -1,0 +1,38 @@
+version: 2
+
+models:
+  - name: stg_coingecko__market_chart
+    description: "Bitcoin daily prices from CoinGecko, deduplicated by timestamp"
+    meta:
+      owner: "barath"
+    columns:
+      - name: data_date
+        description: "Trading date"
+        tests:
+          - not_null
+      - name: data_timestamp
+        description: "Timestamp of trading data point"
+        tests:
+          - not_null
+      - name: close_price
+        description: "BTC closing price in USD"
+        tests:
+          - not_null
+      - name: market_cap_usd
+        description: "BTC market capitalization in USD"
+      - name: volume_usd
+        description: "24-hour trading volume in USD"
+      - name: asset_id
+        description: "Asset identifier (BTC)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['BTC']
+      - name: asset_name
+        description: "Asset name (Bitcoin)"
+      - name: asset_type
+        description: "Asset type (crypto)"
+      - name: __batch_id
+        description: "Ingestion batch identifier"
+      - name: __ingested_at
+        description: "Timestamp of ingestion"
