@@ -7,5 +7,5 @@ select
     data_date,
     close_price,
     daily_return
-from {{ ref('int_daily_returns') }}
+from {{ ref('int_market__daily_returns') }}
 order by asset_id, data_date

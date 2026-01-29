@@ -7,7 +7,7 @@ with asset_returns as (
         asset_type,
         data_date,
         daily_return
-    from {{ ref('int_daily_returns') }}
+    from {{ ref('int_market__daily_returns') }}
 ),
 
 btc_returns as (

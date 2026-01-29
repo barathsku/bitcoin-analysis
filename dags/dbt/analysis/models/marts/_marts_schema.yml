@@ -6,7 +6,7 @@ models:
     # tests:
     #   - dbt_utils.equal_rowcount:
     #       arguments:
-    #         compare_model: ref('int_unified_prices')
+    #         compare_model: ref('int_market__unified_prices')
     #         group_by: asset_id
     columns:
       - name: asset_id

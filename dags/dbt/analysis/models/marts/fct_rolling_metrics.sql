@@ -17,5 +17,5 @@ select
     volatility_30d,
     obs_count_30d,
     cumulative_return_from_start
-from {{ ref('int_rolling_metrics') }}
+from {{ ref('int_market__rolling_metrics') }}
 order by asset_id, data_date

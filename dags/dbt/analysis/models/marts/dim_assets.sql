@@ -4,7 +4,7 @@ select distinct
     asset_id,
     asset_name,
     asset_type
-from {{ ref('int_unified_prices') }}
+from {{ ref('int_market__unified_prices') }}
 order by
     case asset_type
         when 'crypto' then 1

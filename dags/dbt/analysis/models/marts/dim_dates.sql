@@ -2,7 +2,7 @@
 
 with all_dates as (
     select distinct data_date
-    from {{ ref('int_unified_prices') }}
+    from {{ ref('int_market__unified_prices') }}
 ),
 
 date_attributes as (

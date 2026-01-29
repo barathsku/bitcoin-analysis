@@ -1,7 +1,7 @@
 {{ config(location=generate_external_location()) }}
 
 with returns as (
-    select * from {{ ref('int_daily_returns') }}
+    select * from {{ ref('int_market__daily_returns') }}
 ),
 
 rolling_calcs as (

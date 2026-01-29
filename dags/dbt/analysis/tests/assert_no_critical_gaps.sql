@@ -15,7 +15,7 @@ select
     asset_type,
     missing_date,
     is_trading_day
-from {{ ref('int_data_gaps') }}
+from {{ ref('int_market__data_gaps') }}
 where 
     -- BTC should have no gaps at all
     asset_type = 'crypto'

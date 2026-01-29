@@ -1,7 +1,7 @@
 version: 2
 
 models:
-  - name: int_data_gaps
+  - name: int_market__data_gaps
     description: "Identifies missing dates in source data per asset within the observed date range"
     meta:
       owner: "barath"

@@ -7,7 +7,7 @@ with base_prices as (
         asset_type,
         data_date,
         close_price
-    from {{ ref('int_unified_prices') }}
+    from {{ ref('int_market__unified_prices') }}
 ),
 
 -- Forward-fill missing prices (LOCF strategy) with imputation tracking
