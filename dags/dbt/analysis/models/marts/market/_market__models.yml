@@ -1,6 +1,20 @@
 version: 2
 
 models:
+  - name: fct_rolling_metrics
+    description: "Fact table with rolling performance metrics"
+    columns:
+      - name: asset_id
+        description: "Asset identifier"
+        tests:
+          - not_null
+      - name: data_date
+        description: "Calculation date"
+        tests:
+          - not_null
+      - name: volatility_30d
+        description: "30-day rolling volatility"
+
   - name: rpt_performance_summary
     description: "Performance summary showing asset returns across multiple time windows compared to Bitcoin"
     columns:
@@ -58,5 +72,21 @@ models:
           - not_null
       - name: annualized_volatility_pct
         description: "Annualized volatility (percentage)"
+        tests:
+          - not_null
+
+  - name: rpt_correlation
+    description: "Correlation matrix of asset returns"
+    columns:
+      - name: asset_a
+        description: "First asset in the pair"
+        tests:
+          - not_null
+      - name: asset_b
+        description: "Second asset in the pair"
+        tests:
+          - not_null
+      - name: correlation
+        description: "Pearson correlation coefficient"
         tests:
           - not_null

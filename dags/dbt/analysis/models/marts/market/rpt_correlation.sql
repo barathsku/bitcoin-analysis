@@ -16,7 +16,7 @@ correlations as (
         a.asset_name as asset_a_name,
         b.asset_id as asset_b,
         b.asset_name as asset_b_name,
-        corr(a.daily_return, b.daily_return) as correlation_coefficient,
+        corr(a.daily_return, b.daily_return) as correlation,
         count(*) as observation_count
     from daily_returns a
     join daily_returns b on a.data_date = b.data_date
@@ -24,4 +24,5 @@ correlations as (
 )
 
 select * from correlations
-order by asset_a, correlation_coefficient desc
+where correlation is not null
+order by asset_a, correlation desc
