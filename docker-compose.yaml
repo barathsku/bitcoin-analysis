@@ -1,0 +1,30 @@
+version: '3.8'
+
+include:
+  - path: airflow/docker-compose.yaml
+
+services:
+  airflow-webserver:
+    volumes:
+      - ./data:/opt/airflow/data
+      - ./dbt:/opt/airflow/dbt
+
+  airflow-scheduler:
+    volumes:
+      - ./data:/opt/airflow/data
+      - ./dbt:/opt/airflow/dbt
+
+  airflow-worker:
+    volumes:
+      - ./data:/opt/airflow/data
+      - ./dbt:/opt/airflow/dbt
+
+  airflow-triggerer:
+    volumes:
+      - ./data:/opt/airflow/data
+      - ./dbt:/opt/airflow/dbt
+
+  airflow-cli:
+    volumes:
+      - ./data:/opt/airflow/data
+      - ./dbt:/opt/airflow/dbt
