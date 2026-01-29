@@ -18,108 +18,10 @@ from common.core.validator import Validator
 from common.core.writer import ParquetWriter
 from common.core.metadata_repository import MetadataRepository
 from common.core.exceptions import ValidationError, ExtractionError, ConfigurationError
-from common.adapters.coingecko import CoinGeckoAdapter
-from common.adapters.massive import MassiveStocksAdapter, MassiveForexAdapter
+from common.adapters.factory import get_adapter
+from common.core.filesystem import get_existing_dates
 
 logger = logging.getLogger(__name__)
-
-
-def get_existing_dates(
-    source: str,
-    resource: str,
-    ticker: Optional[str] = None,
-    base_path: Optional[str] = None,
-) -> set:
-    """
-    Scan bronze partitions to find already-ingested dates.
-
-    Checks the bronze directory structure to determine which dates
-    already have data, enabling gap-aware fetching.
-
-    Args:
-        source: Source name (e.g., 'coingecko', 'massive')
-        resource: Resource name (e.g., 'market_chart', 'stocks')
-        ticker: Optional ticker symbol for partitioned resources
-        base_path: Optional base path (defaults to AIRFLOW_HOME/data)
-
-    Returns:
-        Set of date objects for which data already exists
-    """
-    import os
-    from pathlib import Path
-    from datetime import datetime
-
-    if base_path is None:
-        airflow_home = os.getenv("AIRFLOW_HOME", "/opt/airflow")
-        base_path = os.path.join(airflow_home, "data")
-
-    bronze_path = (
-        Path(base_path) / "bronze" / f"source={source}" / f"resource={resource}"
-    )
-
-    if not bronze_path.exists():
-        logger.info(f"No existing bronze data found at {bronze_path}")
-        return set()
-
-    existing_dates = set()
-
-    # Handle different partition structures
-    if ticker:
-        # Multi-partition: ticker + data_date (stocks, forex)
-        ticker_path = bronze_path / f"ticker={ticker}"
-        if ticker_path.exists():
-            for date_partition in ticker_path.iterdir():
-                if date_partition.is_dir() and date_partition.name.startswith(
-                    "data_date="
-                ):
-                    date_str = date_partition.name.split("=")[1]
-                    try:
-                        existing_dates.add(
-                            datetime.strptime(date_str, "%Y-%m-%d").date()
-                        )
-                    except ValueError:
-                        logger.warning(f"Invalid date partition: {date_partition.name}")
-    else:
-        # Single partition: data_date only (crypto)
-        for date_partition in bronze_path.iterdir():
-            if date_partition.is_dir() and date_partition.name.startswith("data_date="):
-                date_str = date_partition.name.split("=")[1]
-                try:
-                    existing_dates.add(datetime.strptime(date_str, "%Y-%m-%d").date())
-                except ValueError:
-                    logger.warning(f"Invalid date partition: {date_partition.name}")
-
-    if existing_dates:
-        logger.info(
-            f"Found {len(existing_dates)} existing dates in bronze for {source}/{resource}"
-        )
-
-    return existing_dates
-
-
-def get_adapter(source: str, resource: str, contract: Dict[str, Any]):
-    """
-    Factory function to get the appropriate adapter.
-
-    Args:
-        source: Source name
-        resource: Resource name
-        contract: Data contract
-
-    Returns:
-        Adapter instance
-    """
-    if source == "coingecko":
-        return CoinGeckoAdapter(contract)
-    elif source == "massive":
-        if "stocks" in resource:
-            return MassiveStocksAdapter(contract)
-        elif "forex" in resource:
-            return MassiveForexAdapter(contract)
-        else:
-            raise ValueError(f"Unknown Massive resource: {resource}")
-    else:
-        raise ValueError(f"Unknown source: {source}")
 
 
 @task_group
@@ -139,6 +41,7 @@ def _ingest_data(
     2. transform: staging → bronze _tmp/ (Parquet)
     3. validate: Run Soda Core checks on _tmp/
     4. load: Atomic rename _tmp/ → final partition
+
 
     Args:
         source: Source name (e.g., 'coingecko', 'massive')
@@ -457,8 +360,8 @@ def _ingest_data(
             # Convert partition tuple to dict
             partition_values = dict(partition_tuple)
 
-            # Write to _tmp directory using a marker in context
-            path = writer.write_bronze(
+            # Write to _tmp directory (WAP pattern)
+            path = writer.write_temporary(
                 records=records,
                 contract=contract,
                 partition_values=partition_values,
@@ -613,11 +516,28 @@ def _ingest_data(
             metadata_repo = MetadataRepository()
             metadata_repo.start_step(run_id=run_id, step_name="load")
 
-        # In the current write_bronze implementation, atomic swap already happens
-        # The _tmp/ pattern is already implemented in writer.py
-        # So tmp_paths are actually final paths after atomic swap
+        contract = validate_result["contract"]
 
-        written_partitions = [path for _, path, _ in tmp_paths]
+        # Re-initialize writer
+        writer = ParquetWriter()
+
+        written_partitions = []
+        for partition_str, tmp_path, _ in tmp_paths:
+            # Reconstruct partition values from string
+            # Format: key1=val1, key2=val2
+            partition_values = {}
+            for item in partition_str.split(", "):
+                k, v = item.split("=")
+                partition_values[k] = v
+
+            final_path = writer.publish(
+                tmp_path=tmp_path,
+                contract=contract,
+                partition_values=partition_values,
+                source=source_name,
+                resource=resource_name,
+            )
+            written_partitions.append(final_path)
         total_records = validate_result["total_records"]
 
         logger.info(

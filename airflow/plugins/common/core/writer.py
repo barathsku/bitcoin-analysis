@@ -103,7 +103,7 @@ class ParquetWriter:
         logger.info(f"Read staging data from {staging_path}")
         return data
 
-    def write_bronze(
+    def write_temporary(
         self,
         records: List[Dict[str, Any]],
         contract: Dict[str, Any],
@@ -111,12 +111,7 @@ class ParquetWriter:
         **context,
     ) -> str:
         """
-        Write records to bronze layer using Write-Audit-Publish pattern.
-
-        Steps:
-        1. Write Parquet to _tmp/ directory
-        2. (Future: Run validation)
-        3. Atomically rename _tmp/ to final partition
+        Write records to temporary location (Write phase of WAP).
 
         Args:
             records: List of flat dicts to write
@@ -125,20 +120,19 @@ class ParquetWriter:
             **context: Additional context (source, resource names)
 
         Returns:
-            Path to final bronze partition
+            Path to temporary partition directory
         """
         source = context.get(
             "source", contract.get("source", {}).get("name", "unknown")
         )
         resource = contract.get("resource", {}).get("name", "unknown")
 
-        # Build partition path
+        # Build final path to derive temp path
         base_dir = self.bronze_path / f"source={source}" / f"resource={resource}"
-
-        # Add partition subdirectories
         for key, value in partition_values.items():
             base_dir = base_dir / f"{key}={value}"
 
+        # Create temp directory
         tmp_dir = base_dir.parent / f"_tmp_{base_dir.name}"
         tmp_dir.mkdir(parents=True, exist_ok=True)
 
@@ -151,11 +145,51 @@ class ParquetWriter:
             pq.write_table(table, parquet_file, compression="snappy")
 
             logger.info(f"Wrote temporary Parquet to {tmp_dir}")
+            return str(tmp_dir)
 
-            # Atomic publish using rename-based swap (WAP pattern)
-            final_dir = base_dir
-            old_dir = base_dir.parent / f"{base_dir.name}_old"
+        except Exception as e:
+            # Cleanup on failure
+            if tmp_dir.exists():
+                shutil.rmtree(tmp_dir)
+            logger.error(f"Failed to write temporary data: {e}")
+            raise
 
+    def publish(
+        self,
+        tmp_path: str,
+        contract: Dict[str, Any],
+        partition_values: Dict[str, str],
+        **context,
+    ) -> str:
+        """
+        Publish temporary partition to final location (Publish phase of WAP).
+
+        Atomically swaps _tmp -> final.
+
+        Args:
+            tmp_path: Path to temporary directory
+            contract: Data contract
+            partition_values: Partition key/values
+            **context: Additional context
+
+        Returns:
+            Path to final partition
+        """
+        source = context.get(
+            "source", contract.get("source", {}).get("name", "unknown")
+        )
+        resource = contract.get("resource", {}).get("name", "unknown")
+
+        # Build final path
+        base_dir = self.bronze_path / f"source={source}" / f"resource={resource}"
+        for key, value in partition_values.items():
+            base_dir = base_dir / f"{key}={value}"
+        
+        tmp_dir = Path(tmp_path)
+        final_dir = base_dir
+        old_dir = base_dir.parent / f"{base_dir.name}_old"
+
+        try:
             # Step 1: If data exists, atomically rename old partition to _old
             if final_dir.exists():
                 final_file = final_dir / "data.parquet"
@@ -183,10 +217,7 @@ class ParquetWriter:
             return str(final_dir)
 
         except Exception as e:
-            # Cleanup on failure
-            if tmp_dir.exists():
-                shutil.rmtree(tmp_dir)
-            logger.error(f"Failed to write bronze data: {e}")
+            logger.error(f"Failed to publish bronze data: {e}")
             raise
 
     def _records_to_table(
