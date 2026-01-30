@@ -15,7 +15,7 @@ with DAG(
     "dbt_pipeline_and_docs",
     default_args=default_args,
     description="Runs dbt build and generates static documentation & data dictionary",
-    schedule_interval="@daily",
+    schedule_interval="30 6 * * *",
     start_date=datetime(2026, 1, 26),
     catchup=False,
     tags=["dbt", "docs", "reporting"],
