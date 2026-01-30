@@ -161,7 +161,7 @@ Repeat for each of these tickers: `C:EURUSD`, `C:GBPUSD`.
 
 ### 2. Run Transformations
 
-After all ingestion runs show `Success`:
+After all ingestion runs show `Success` (or if you have used `data.zip`):
 
 1.  Trigger the `dbt_pipeline_and_docs` DAG.
 2.  Wait for completion. This will process the raw data into processed models and calculate all metrics (volatility, returns, etc).

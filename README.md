@@ -65,12 +65,20 @@ The project includes detailed documentation and the final analysis report:
 *   **[Extra Credit](reports/EXTRA_CREDIT.md)**: Solutions for the extra credit questions (Etherscan & Dune Analytics).
 *   **[Operations Guide](docs/OPERATIONS.md)**: Instructions for accessing the UI, triggering DAGs, and performing manual backfills.
 
-## Testing
+## Testing & Development
 
-To run the test suite (unit tests and integration tests) for the Airflow plugins and logic:
+For instructions on setting up a local development environment, running unit tests with `pytest`, and executing dbt models locally, please refer to the **[Development & Testing Guide](docs/DEVELOPMENT.md)**. 
 
-```bash
-docker compose run --rm airflow-scheduler pytest /opt/airflow/tests
+When running the Docker containers locally, they can be accessed internally like:
+
+```
+docker exec -it bitcoin-analysis-postgres-1 psql -U airflow -d pipeline_metadata
+```
+
+This is beneficial when troubleshooting container-specific issues, like checking if Airflow's Redis server is active or not:
+
+```
+docker exec bitcoin-analysis-redis-1 redis-cli ping
 ```
 
 ## Project Structure
