@@ -216,6 +216,5 @@ logs/
 .vscode/
 
 # Miscellaneous
-scripts/
-# Personal Assessment
+scripts_local/
 ASSESSMENT.md
