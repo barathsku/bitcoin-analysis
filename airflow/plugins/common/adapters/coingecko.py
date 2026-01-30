@@ -56,7 +56,7 @@ class CoinGeckoAdapter(BaseAdapter):
         """
         # Calculate number of days
         delta = end_date - start_date
-        days = delta.days + 1  # Inclusive
+        days = delta.days + 1  # Inclusive of start date
 
         # CoinGecko free tier API has a maximum of 365 days
         # Cap the request to avoid 401 errors
