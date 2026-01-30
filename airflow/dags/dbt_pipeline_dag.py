@@ -32,7 +32,7 @@ with DAG(
 
     dbt_build = BashOperator(
         task_id="dbt_build",
-        bash_command="/home/airflow/.local/bin/dbt build --profiles-dir .",
+        bash_command="/home/airflow/.local/bin/dbt build --profiles-dir . --no-partial-parse",
         cwd="/opt/airflow/dbt/analysis",
         env={
             "DBT_PROFILES_DIR": "/opt/airflow/dbt/analysis",
