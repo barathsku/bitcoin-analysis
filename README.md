@@ -42,7 +42,7 @@ We use Docker to orchestrate the Airflow services and resources.
 docker compose up -d
 ```
 
-Once the services are running, access the Airflow UI at:
+You will have to wait for 3-4 minutes for the services during first-time startups, and 2-3 minutes for subsequent startups (due to the custom Python libraries being installed across all Airflow containers). Once the services are running, access the Airflow UI at:
 *   **URL**: [http://localhost:8089](http://localhost:8089)
 *   **Username**: `airflow`
 *   **Password**: `airflow`
@@ -52,6 +52,7 @@ Once the services are running, access the Airflow UI at:
 1.  Navigate to the Airflow UI.
 2.  Enable and run **`coingecko_market_chart_ingestion`, `massive_forex_ingestion`, `massive_stocks_ingestion`** DAGs.
     *   These DAGs orchestrate the fetching of T-1 data from APIs (Massive & CoinGecko).
+    *   **Note**: Ingestion DAGs are scheduled at 06:00 UTC to account for data availability delays (e.g., free tier API's T-1 restrictions) and ensure data consistency.
     *   They use a write-audit-publish pattern to write atomic data to the bronze layer.
     *   They automatically trigger the downstream dbt models to transform data into analysis-ready datasets.
 3.  Enable and run **`dbt_run`** DAG.
