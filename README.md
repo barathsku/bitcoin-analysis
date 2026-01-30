@@ -31,8 +31,9 @@ AIRFLOW_UID=1000
 COINGECKO_API_KEY=your_api_key_here
 MASSIVE_API_KEY=your_api_key_here
 AIRFLOW_PROJ_DIR=.
-AIRFLOW_HOME=/home/bdn/coingecko-assessment
 ```
+
+The CoinGecko/Massive API keys in the `.env` file for the ingestion DAGs to work as expected.
 
 ### 3. Run the Platform
 
