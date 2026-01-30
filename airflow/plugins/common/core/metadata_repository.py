@@ -1,5 +1,5 @@
 """
-Repository for storing pipeline metadata in PostgreSQL.
+Repository for storing pipeline metadata in PostgreSQL
 """
 
 import logging
@@ -25,14 +25,14 @@ logger = logging.getLogger(__name__)
 
 class MetadataRepository:
     """
-    Repository for pipeline metadata storage.
+    Repository for pipeline metadata storage
 
-    Stores quality validation results in PostgreSQL.
+    Stores quality validation results in PostgreSQL
     """
 
     def __init__(self, connection_string: str = None):
         """
-        Initialize repository with database connection.
+        Initialize repository with database connection
 
         Args:
             connection_string: PostgreSQL connection string
@@ -40,6 +40,8 @@ class MetadataRepository:
         """
         if connection_string is None:
             # Default to Airflow's PostgreSQL instance, different database
+            # Temporarily using Airflow's metadata database in the context
+            # of this take-home assessment since database load is very minimal
             connection_string = (
                 "postgresql://airflow:airflow@postgres:5432/pipeline_metadata"
             )

@@ -1,7 +1,7 @@
 """
-Asset catalog loader for centralized asset management.
+Asset catalog loader for centralized asset management
 
-Provides filtering and querying capabilities for assets defined in assets.yaml.
+Provides filtering and querying capabilities for assets defined in assets.yaml
 """
 
 import logging
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class Asset:
-    """Represents a single asset from the catalog."""
+    """Represents a single asset from the catalog"""
 
     ticker: str
     name: str
@@ -42,11 +42,11 @@ class Asset:
 
 
 class AssetCatalog:
-    """Load and filter assets from centralized catalog."""
+    """Load and filter assets from centralized catalog"""
 
     def __init__(self, catalog_path: str = None):
         """
-        Initialize asset catalog loader.
+        Initialize asset catalog loader
 
         Args:
             catalog_path: Path to assets.yaml file
@@ -59,7 +59,7 @@ class AssetCatalog:
         self._assets: Optional[List[Asset]] = None
 
     def _load_catalog(self) -> List[Asset]:
-        """Load and parse assets.yaml."""
+        """Load and parse assets.yaml"""
         if not self.catalog_path.exists():
             raise FileNotFoundError(f"Asset catalog not found: {self.catalog_path}")
 
@@ -88,7 +88,7 @@ class AssetCatalog:
         enabled_only: bool = True,
     ) -> List[Asset]:
         """
-        Filter and return assets from catalog.
+        Filter and return assets from catalog
 
         Args:
             source: Filter by source name (e.g., 'massive', 'coingecko')
@@ -132,7 +132,7 @@ class AssetCatalog:
 
     def get_asset_by_ticker(self, ticker: str) -> Optional[Asset]:
         """
-        Get a specific asset by ticker.
+        Get a specific asset by ticker
 
         Args:
             ticker: Ticker symbol
@@ -150,6 +150,6 @@ class AssetCatalog:
         return None
 
     def reload(self):
-        """Force reload of asset catalog."""
+        """Force reload of asset catalog"""
         self._assets = None
         self._load_catalog()

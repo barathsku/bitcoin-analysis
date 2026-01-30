@@ -1,8 +1,5 @@
 """
-DAG generator for auto-generating ingestion DAGs from asset catalog.
-
-Reads assets from the centralized catalog and dynamically creates task groups,
-eliminating the need to maintain hardcoded ticker lists in DAG files.
+DAG generator for auto-generating ingestion DAGs from asset catalog
 """
 
 import logging
@@ -21,9 +18,9 @@ logger = logging.getLogger(__name__)
 
 def sanitize_task_id(value: str) -> str:
     """
-    Sanitize a value for use in Airflow task IDs.
+    Sanitize a value for use in Airflow task IDs
 
-    Replaces special characters with underscores to create valid task IDs.
+    Replaces special characters with underscores to create valid task IDs
 
     Args:
         value: Raw value (e.g., ticker like 'C:EURUSD')
@@ -37,7 +34,7 @@ def sanitize_task_id(value: str) -> str:
 
 def generate_task_group_id(asset: Asset) -> str:
     """
-    Generate semantic task group ID from asset metadata.
+    Generate semantic task group ID from asset metadata
 
     Format: {source}_{resource}_{sanitized_ticker}
     Examples:
@@ -69,9 +66,9 @@ def generate_ingestion_dag(
     default_args: Optional[Dict[str, Any]] = None,
 ) -> DAG:
     """
-    Generate an ingestion DAG for assets matching the specified filters.
+    Generate an ingestion DAG for assets matching the specified filters
 
-    Reads assets from the catalog and creates task groups dynamically.
+    Reads assets from the catalog and creates task groups dynamically
 
     Args:
         dag_id: DAG identifier
@@ -154,13 +151,10 @@ def generate_ingestion_dag(
         task_groups = []
 
         for asset in assets:
-            # Generate semantic task group ID
             group_id = generate_task_group_id(asset)
 
-            # Determine pool from source
             pool = f"{asset.source}_api_pool"
 
-            # Build kwargs from asset params
             kwargs = {"ticker": asset.ticker, **asset.params}
 
             logger.debug(
@@ -168,7 +162,6 @@ def generate_ingestion_dag(
                 f"(ticker={asset.ticker}, source={asset.source}, resource={asset.resource})"
             )
 
-            # Create ingestion task group
             task_group = ingest(
                 group_id=group_id,
                 source=asset.source,
@@ -179,7 +172,6 @@ def generate_ingestion_dag(
 
             task_groups.append(task_group)
 
-        # Set up dependencies
         if task_groups:
             begin >> task_groups >> end
         else:

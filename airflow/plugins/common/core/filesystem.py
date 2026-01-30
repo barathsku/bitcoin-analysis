@@ -1,5 +1,5 @@
 """
-Filesystem helper functions for checking data availability.
+Filesystem helper functions for checking data availability
 """
 
 import os
@@ -18,10 +18,10 @@ def get_existing_dates(
     base_path: Optional[str] = None,
 ) -> set:
     """
-    Scan bronze partitions to find already-ingested dates.
+    Scan bronze partitions to find already-ingested dates
 
     Checks the bronze directory structure to determine which dates
-    already have data, enabling gap-aware fetching.
+    already have data, enabling gap-aware fetching
 
     Args:
         source: Source name (e.g., 'coingecko', 'massive')
@@ -46,7 +46,6 @@ def get_existing_dates(
 
     existing_dates = set()
 
-    # Handle different partition structures
     if ticker:
         # Multi-partition: ticker + data_date (stocks, forex)
         ticker_path = bronze_path / f"ticker={ticker}"

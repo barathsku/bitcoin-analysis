@@ -13,14 +13,14 @@ logger = logging.getLogger(__name__)
 
 class Validator:
     """
-    Data quality validator using Soda Core.
+    Data quality validator using Soda Core
 
-    Executes SodaCL checks defined in data contracts.
+    Executes SodaCL checks defined in data contracts
     """
 
     def validate(self, contract: Dict[str, Any], **kwargs) -> Dict[str, Any]:
         """
-        Validate records against contract validation rules using Soda Core with DuckDB.
+        Validate records against contract validation rules using Soda Core with DuckDB
 
         Args:
             contract: Data contract with validation.soda_checks
@@ -37,15 +37,11 @@ class Validator:
         """
         tmp_paths = kwargs.get("tmp_paths", [])
 
-        if not tmp_paths:
-            logger.warning("No data paths to validate")
-            # If no data, is it valid? Let's assume yes but warn
-            return {
-                "is_valid": True,
-                "checks_passed": 0,
-                "checks_failed": 0,
-                "failed_checks": [],
-            }
+        fail_on_empty_data = (
+            contract.get("resource", {})
+            .get("validation", {})
+            .get("fail_on_empty_data", False)
+        )
 
         # Extract file paths from the tuples (partition, path, count)
         # Note: The paths from writer.write_bronze() are directories,
@@ -68,6 +64,23 @@ class Validator:
 
         if not file_paths:
             logger.warning("No valid file paths found in tmp_paths")
+            if fail_on_empty_data:
+                logger.error(
+                    "Validation failed: No valid parquet files found and fail_on_empty_data=True"
+                )
+                return {
+                    "is_valid": False,
+                    "checks_passed": 0,
+                    "checks_failed": 1,
+                    "failed_checks": [
+                        {
+                            "name": "fail_on_empty_data",
+                            "outcome": "fail",
+                            "diagnostic": "No valid parquet files found in provided paths",
+                        }
+                    ],
+                }
+
             return {
                 "is_valid": True,
                 "checks_passed": 0,
@@ -214,10 +227,10 @@ class Validator:
 
     def _sanitize_checks(self, checks: List) -> List:
         """
-        Sanitize checks to work around Soda Core issues with DuckDB views.
+        Sanitize checks to work around Soda Core issues with DuckDB views
 
         Converts row-level checks to metric checks where possible to avoid
-        'AttributeError: NoneType object has no attribute column_name'.
+        'AttributeError: NoneType object has no attribute column_name'
 
         Args:
             checks: List of raw SodaCL checks (strings or dicts for user-defined metrics)
@@ -272,7 +285,7 @@ class Validator:
 
     def _build_checks_yaml(self, table_name: str, checks: List) -> str:
         """
-        Build SodaCL YAML from list of checks.
+        Build SodaCL YAML from list of checks
 
         Args:
             table_name: Name of the table/dataset

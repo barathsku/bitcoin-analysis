@@ -1,5 +1,5 @@
 """
-Shared Airflow components for data ingestion pipeline.
+Shared Airflow components for data ingestion pipeline
 """
 
 import logging
@@ -33,13 +33,13 @@ def _ingest_data(
     **kwargs,
 ):
     """
-    TaskGroup factory for data ingestion with 4 atomic tasks (WAP pattern).
+    TaskGroup factory for data ingestion with 4 atomic tasks
 
     Tasks:
-    1. extract: API call → staging (JSON)
-    2. transform: staging → bronze _tmp/ (Parquet)
+    1. extract: API call --> staging (JSON)
+    2. transform: staging --> bronze _tmp/ (Parquet)
     3. validate: Run Soda Core checks on _tmp/
-    4. load: Atomic rename _tmp/ → final partition
+    4. load: Atomic rename _tmp/ --> final partition
 
 
     Args:
@@ -63,7 +63,7 @@ def _ingest_data(
         **kwargs,
     ) -> Dict[str, Any]:
         """
-        Extract: Fetch data from API and write to staging.
+        Extract: Fetch data from API and write to staging
 
         This task is idempotent:
         - Uses deterministic batch_id
@@ -71,17 +71,14 @@ def _ingest_data(
         """
         logger.info(f"Extracting {source}/{resource}")
 
-        # Initialize metadata repository
         metadata_repo = MetadataRepository()
 
-        # Load contract
         loader = ContractLoader()
         try:
             contract = loader.load(source, resource)
         except Exception as e:
             raise ConfigurationError(f"Failed to load contract: {e}")
 
-        # Get context from kwargs
         context = kwargs
 
         # Determine date range
@@ -248,9 +245,9 @@ def _ingest_data(
     @task(task_id="transform")
     def transform_data(extract_result: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Transform: Read staging, transform to records, write to bronze _tmp/.
+        Transform: Read staging, transform to records, write to bronze _tmp/
 
-        This prepares data for validation but doesn't publish yet (WAP pattern).
+        This prepares data for validation but doesn't publish yet
         """
         # Handle skipped extraction (gap-aware logic)
         if extract_result.get("skipped", False):
@@ -268,13 +265,11 @@ def _ingest_data(
 
         logger.info(f"Transforming {source_name}/{resource_name}")
 
-        # Initialize metadata repository and log step start
         run_id = extract_result.get("run_id")
         if run_id:
             metadata_repo = MetadataRepository()
             metadata_repo.start_step(run_id=run_id, step_name="transform")
 
-        # Initialize components
         transformer = Transformer(contract)
         writer = ParquetWriter()
 
@@ -327,7 +322,7 @@ def _ingest_data(
 
         logger.info(f"Partitioning by: {', '.join(partition_keys)}")
 
-        # Write to _tmp/ (NOT final location - WAP pattern)
+        # Write to _tmp/ (NOT final location)
         # Group records by partition key tuple (e.g., (ticker, data_date))
         partitioned_records = defaultdict(list)
         for record in all_records:
@@ -352,7 +347,7 @@ def _ingest_data(
             # Convert partition tuple to dict
             partition_values = dict(partition_tuple)
 
-            # Write to _tmp directory (WAP pattern)
+            # Write to _tmp directory
             path = writer.write_temporary(
                 records=records,
                 contract=contract,
@@ -393,9 +388,9 @@ def _ingest_data(
     @task(task_id="validate")
     def validate_data(transform_result: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Validate: Run Soda Core checks on transformed data (Audit phase of WAP).
+        Validate: Run Soda Core checks on transformed data (Audit phase of WAP)
 
-        Reads from bronze _tmp/ and validates. Does not publish yet.
+        Reads from bronze _tmp/ and validates. Does not publish yet
         """
         # Handle skipped extraction
         if transform_result.get("skipped", False):
@@ -417,7 +412,6 @@ def _ingest_data(
 
         logger.info(f"Validating {source_name}/{resource_name}")
 
-        # Initialize metadata repository and log step start
         run_id = transform_result.get("run_id")
         if run_id:
             metadata_repo = MetadataRepository()
@@ -484,7 +478,6 @@ def _ingest_data(
 
         This is the final step - atomically moves data to production location.
         """
-        # Handle skipped extraction
         if validate_result.get("skipped", False):
             logger.info("Extraction was skipped (all dates exist), skipping load")
             return {
@@ -502,7 +495,6 @@ def _ingest_data(
 
         logger.info(f"Loading {source_name}/{resource_name} to final location")
 
-        # Initialize metadata repository and log step start
         run_id = validate_result.get("run_id")
         if run_id:
             metadata_repo = MetadataRepository()
@@ -510,7 +502,6 @@ def _ingest_data(
 
         contract = validate_result["contract"]
 
-        # Re-initialize writer
         writer = ParquetWriter()
 
         written_partitions = []
@@ -583,7 +574,7 @@ def ingest(
     **kwargs,
 ):
     """
-    Wrapper for _ingest_data task group to allow dynamic group_id injection.
+    Wrapper for _ingest_data task group to allow dynamic group_id injection
 
     Args:
         source: Source name

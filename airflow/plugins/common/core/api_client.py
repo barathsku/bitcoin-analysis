@@ -1,5 +1,5 @@
 """
-API Client with retry logic, rate limiting, and exponential backoff.
+API Client with retry logic, rate limiting, and exponential backoff
 """
 
 import time
@@ -13,23 +13,23 @@ logger = logging.getLogger(__name__)
 
 
 class TokenBucket:
-    """Thread-safe token bucket for rate limiting."""
+    """Thread-safe token bucket for rate limiting"""
 
     def __init__(self, tokens_per_minute: int):
         """
-        Initialize token bucket.
+        Initialize token bucket
 
         Args:
             tokens_per_minute: Number of tokens (requests) allowed per minute
         """
         self.capacity = tokens_per_minute
         self.tokens = tokens_per_minute
-        self.fill_rate = tokens_per_minute / 60.0  # Tokens per second
+        self.fill_rate = tokens_per_minute / 60.0
         self.last_update = time.time()
         self.lock = Lock()
 
     def _refill(self):
-        """Refill tokens based on elapsed time."""
+        """Refill tokens based on elapsed time"""
         now = time.time()
         elapsed = now - self.last_update
         self.tokens = min(self.capacity, self.tokens + elapsed * self.fill_rate)
@@ -37,7 +37,7 @@ class TokenBucket:
 
     def acquire(self, tokens: int = 1) -> None:
         """
-        Acquire tokens. Blocks until tokens are available.
+        Acquire tokens. Blocks until tokens are available
 
         Args:
             tokens: Number of tokens to acquire
@@ -48,14 +48,13 @@ class TokenBucket:
                 if self.tokens >= tokens:
                     self.tokens -= tokens
                     return
-                # Calculate wait time until we have enough tokens
                 tokens_needed = tokens - self.tokens
                 wait_time = tokens_needed / self.fill_rate
-                time.sleep(min(wait_time, 0.1))  # Sleep at most 100ms at a time
+                time.sleep(min(wait_time, 0.1))
 
 
 class APIClient:
-    """HTTP client with exponential backoff retry and rate limiting."""
+    """HTTP client with exponential backoff retry and rate limiting"""
 
     def __init__(
         self,
@@ -66,7 +65,7 @@ class APIClient:
         timeout: int = 30,
     ):
         """
-        Initialize API client.
+        Initialize API client
 
         Args:
             base_url: Base URL for the API
@@ -83,7 +82,7 @@ class APIClient:
         self.session = requests.Session()
 
     def _build_headers(self) -> Dict[str, str]:
-        """Build request headers including authentication."""
+        """Build request headers including authentication"""
         headers = {}
 
         if self.auth_config.get("type") == "header":
@@ -100,7 +99,7 @@ class APIClient:
 
     def _exponential_backoff(self, attempt: int) -> float:
         """
-        Calculate exponential backoff with jitter.
+        Calculate exponential backoff with jitter
 
         Args:
             attempt: Current retry attempt number (0-indexed)
@@ -121,7 +120,7 @@ class APIClient:
         headers: Optional[Dict[str, str]] = None,
     ) -> Dict[str, Any]:
         """
-        Make an HTTP request with retry logic.
+        Make an HTTP request with retry logic
 
         Args:
             method: HTTP method (GET, POST, etc.)

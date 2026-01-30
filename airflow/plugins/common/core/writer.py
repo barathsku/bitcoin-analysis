@@ -1,5 +1,5 @@
 """
-Parquet writer with Write-Audit-Publish (WAP) pattern.
+Parquet writer
 """
 
 import os
@@ -16,17 +16,16 @@ logger = logging.getLogger(__name__)
 
 
 class ParquetWriter:
-    """Writer for staging (JSON) and bronze (Parquet) layers with WAP pattern."""
+    """Writer for staging (JSON) and bronze (Parquet) layers"""
 
     def __init__(self, base_path: Optional[str] = None):
         """
-        Initialize writer.
+        writer class initialization
 
         Args:
             base_path: Base directory for data storage
         """
         if base_path is None:
-            # Default to AIRFLOW_HOME/data
             airflow_home = os.getenv("AIRFLOW_HOME", "/opt/airflow")
             base_path = os.path.join(airflow_home, "data")
 
@@ -42,7 +41,7 @@ class ParquetWriter:
             self.bronze_path.mkdir(parents=True, exist_ok=True)
         except PermissionError as e:
             logger.error(
-                f"Permission denied creating directories at {self.base_path}. Check AIRFLOW_HOME permissions."
+                f"Permission denied creating directories at {self.base_path}, check AIRFLOW_HOME permissions."
             )
             raise e
 
@@ -56,7 +55,7 @@ class ParquetWriter:
         """
         Write raw JSON response to staging area.
 
-        Staging is append-only - each ingestion creates a new batch.
+        Staging is append-only, each ingestion creates a new batch.
 
         Args:
             raw_response: Raw API response
@@ -127,20 +126,16 @@ class ParquetWriter:
         )
         resource = contract.get("resource", {}).get("name", "unknown")
 
-        # Build final path to derive temp path
         base_dir = self.bronze_path / f"source={source}" / f"resource={resource}"
         for key, value in partition_values.items():
             base_dir = base_dir / f"{key}={value}"
 
-        # Create temp directory
         tmp_dir = base_dir.parent / f"_tmp_{base_dir.name}"
         tmp_dir.mkdir(parents=True, exist_ok=True)
 
         try:
-            # Convert to PyArrow table with schema
             table = self._records_to_table(records, contract)
 
-            # Write Parquet
             parquet_file = tmp_dir / "data.parquet"
             pq.write_table(table, parquet_file, compression="snappy")
 
@@ -148,7 +143,6 @@ class ParquetWriter:
             return str(tmp_dir)
 
         except Exception as e:
-            # Cleanup on failure
             if tmp_dir.exists():
                 shutil.rmtree(tmp_dir)
             logger.error(f"Failed to write temporary data: {e}")
@@ -194,19 +188,17 @@ class ParquetWriter:
             if final_dir.exists():
                 final_file = final_dir / "data.parquet"
                 if final_file.exists():
-                    # Valid data exists - back it up atomically
                     if old_dir.exists():
-                        shutil.rmtree(old_dir)  # Clean up stale _old backup
+                        shutil.rmtree(old_dir)
                     os.rename(str(final_dir), str(old_dir))
                     logger.info(f"Renamed old partition to {old_dir}")
                 else:
-                    # Directory exists but no valid data.parquet (incomplete from failed run)
                     shutil.rmtree(final_dir)
                     logger.info(f"Removed incomplete partition at {final_dir}")
 
             # Step 2: Atomically rename _tmp to final location (atomic OS operation)
             os.rename(str(tmp_dir), str(final_dir))
-            logger.info(f"Published partition: {tmp_dir} → {final_dir}")
+            logger.info(f"Published partition: {tmp_dir} --> {final_dir}")
 
             # Step 3: Safe cleanup - delete _old backup
             if old_dir.exists():
@@ -224,7 +216,7 @@ class ParquetWriter:
         self, records: List[Dict[str, Any]], contract: Dict[str, Any]
     ) -> pa.Table:
         """
-        Convert records to PyArrow table with explicit schema.
+        Convert records to PyArrow table with explicit schema
 
         Type conversions happen here based on contract's 'type' hints.
 
@@ -238,12 +230,10 @@ class ParquetWriter:
         if not records:
             raise ValueError("No records to write")
 
-        # Build PyArrow schema from contract
         extract_rules = contract.get("resource", {}).get("extract", {})
         fields = []
 
         for column_name in records[0].keys():
-            # Get type from contract or infer
             rule = extract_rules.get(column_name, {})
             type_hint = rule.get("type")
 
@@ -252,8 +242,6 @@ class ParquetWriter:
 
         schema = pa.schema(fields)
 
-        # Convert records to PyArrow table
-        # Handle type conversions
         converted_records = []
         for record in records:
             converted_record = {}
@@ -263,7 +251,6 @@ class ParquetWriter:
                 converted_record[column_name] = self._convert_value(value, type_hint)
             converted_records.append(converted_record)
 
-        # Create table
         table = pa.Table.from_pylist(converted_records, schema=schema)
         return table
 

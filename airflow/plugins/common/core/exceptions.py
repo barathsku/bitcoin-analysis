@@ -1,17 +1,17 @@
 """
-Structured exception hierarchy for pipeline error handling.
+Structured exception hierarchy for pipeline error handling
 """
 
 
 class PipelineError(Exception):
-    """Base exception for all pipeline errors."""
+    """Base exception for all pipeline errors"""
 
     pass
 
 
 class RetryableError(PipelineError):
     """
-    Errors that should trigger a retry.
+    Errors that should trigger a retry
 
     Examples:
     - Network timeouts
@@ -25,7 +25,7 @@ class RetryableError(PipelineError):
 
 class FatalError(PipelineError):
     """
-    Errors that should NOT retry.
+    Errors that should NOT retry
 
     Examples:
     - 4xx client errors (except 429)
@@ -38,7 +38,7 @@ class FatalError(PipelineError):
 
 
 class ValidationError(FatalError):
-    """Data quality validation failures from Soda Core checks."""
+    """Data quality validation failures from Soda Core checks"""
 
     def __init__(self, message: str, failed_checks: list = None):
         super().__init__(message)
@@ -46,12 +46,12 @@ class ValidationError(FatalError):
 
 
 class ExtractionError(RetryableError):
-    """API extraction failures (network, timeout, server errors)."""
+    """API extraction failures (network, timeout, server errors)"""
 
     pass
 
 
 class ConfigurationError(FatalError):
-    """Invalid configuration or contract errors."""
+    """Invalid configuration or contract errors"""
 
     pass

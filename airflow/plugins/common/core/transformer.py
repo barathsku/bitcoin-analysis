@@ -1,5 +1,5 @@
 """
-Transformer to convert raw JSON to flat records based on extraction rules.
+Transformer to convert raw JSON to flat records based on extraction rules
 """
 
 import logging
@@ -13,11 +13,11 @@ logger = logging.getLogger(__name__)
 
 
 class Transformer:
-    """Transform raw API responses to flat records using extraction rules."""
+    """Transform raw API responses to flat records using extraction rules"""
 
     def __init__(self, contract: Dict[str, Any]):
         """
-        Initialize transformer with a data contract.
+        Initialize transformer with a data contract
 
         Args:
             contract: Data contract containing extraction rules
@@ -29,7 +29,7 @@ class Transformer:
         self, raw_response: Dict[str, Any], **context
     ) -> List[Dict[str, Any]]:
         """
-        Transform raw JSON response to list of flat records.
+        Transform raw JSON response to list of flat records
 
         Args:
             raw_response: Raw API response as dict
@@ -59,7 +59,6 @@ class Transformer:
 
             extracted_data[column_name] = value
 
-        # Convert to records
         if array_fields:
             # Zip arrays to create multiple rows
             records = self._zip_arrays(extracted_data, array_fields)
@@ -86,7 +85,7 @@ class Transformer:
 
     def _convert_type(self, value: Any, type_hint: str) -> Any:
         """
-        Convert value based on type hint.
+        Convert value based on type hint
 
         Args:
             value: Raw value
@@ -121,7 +120,7 @@ class Transformer:
 
     def _extract_value(self, data: Any, path: str, **context) -> Any:
         """
-        Extract value from nested dict/list using JSONPath-like syntax.
+        Extract value from nested dict/list using JSONPath-like syntax
 
         Supports:
         - Dot notation: "field.nested"
@@ -142,7 +141,6 @@ class Transformer:
             param_name = path.split(".", 1)[1]
             return context.get(param_name)
 
-        # Parse path
         current = data
         parts = self._parse_path(path)
 
@@ -153,10 +151,8 @@ class Transformer:
             elif part == "*":
                 # Array wildcard - return list
                 if isinstance(current, list):
-                    # Continue extraction for remaining parts
                     remaining_parts = parts[parts.index(part) + 1 :]
                     if remaining_parts:
-                        # Extract from each element
                         return [
                             self._extract_from_parts(item, remaining_parts)
                             for item in current
@@ -176,7 +172,7 @@ class Transformer:
 
     def _parse_path(self, path: str) -> List:
         """
-        Parse path expression into parts.
+        Parse path expression into parts
 
         Examples:
             "prices[*][0]" -> ["prices", "*", 0]
@@ -222,7 +218,7 @@ class Transformer:
         return parts
 
     def _extract_from_parts(self, data: Any, parts: List) -> Any:
-        """Helper to extract value from remaining parts."""
+        """Helper to extract value from remaining parts"""
         current = data
         for part in parts:
             if isinstance(part, int):
@@ -245,7 +241,7 @@ class Transformer:
         self, extracted_data: Dict[str, Any], array_fields: List[str]
     ) -> List[Dict[str, Any]]:
         """
-        Zip array fields to create multiple rows.
+        Zip array fields to create multiple rows
 
         For CoinGecko example:
             prices = [[ts1, p1], [ts2, p2]]
@@ -273,12 +269,10 @@ class Transformer:
             record = {}
             for field_name, value in extracted_data.items():
                 if field_name in array_fields:
-                    # Extract i-th element from array
                     record[field_name] = (
                         value[i] if isinstance(value, list) and i < len(value) else None
                     )
                 else:
-                    # Non-array field: replicate across all rows
                     record[field_name] = value
             records.append(record)
 
@@ -288,10 +282,10 @@ class Transformer:
         self, records: List[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """
-        Deduplicate records by partition keys, keeping the last entry per partition.
+        Deduplicate records by partition keys, keeping the last entry per partition
 
         For CoinGecko data, multiple timestamps within the same day convert to the same
-        date. We keep the last occurrence (most recent timestamp) for each date.
+        date. We keep the last occurrence (most recent timestamp) for each date
 
         Args:
             records: List of record dicts
@@ -313,9 +307,7 @@ class Transformer:
         # Using a dict to maintain insertion order (last entry wins)
         unique_records = {}
         for record in records:
-            # Build partition tuple as key
             partition_tuple = tuple(record.get(key) for key in partition_keys)
-            # Last entry for this partition will overwrite previous ones
             unique_records[partition_tuple] = record
 
         deduplicated = list(unique_records.values())
@@ -330,11 +322,11 @@ class Transformer:
 
     def _compute_schema_version(self) -> str:
         """
-        Compute schema version hash from contract extract rules.
+        Compute schema version hash from contract extract rules
 
         Per-resource versioning: each resource contract gets a version based on
         the hash of its extract rules (field names + types). This allows us to
-        detect when API response structure changes.
+        detect when API response structure changes
 
         Returns:
             8-character hex hash of schema definition
