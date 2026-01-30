@@ -6,6 +6,8 @@ select
     asset_type,
     data_date,
     close_price,
-    daily_return
+    daily_return,
+    __batch_id,
+    __ingested_at
 from {{ ref('int_market__daily_returns') }}
 order by asset_id, data_date
