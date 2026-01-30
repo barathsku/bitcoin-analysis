@@ -1,6 +1,5 @@
 # Centralized asset catalog
 # Single source of truth for all assets to ingest across all sources
-# To add a new asset, simply add an entry here - no DAG changes needed
 
 assets:
   # Stocks from Massive
@@ -11,7 +10,7 @@ assets:
     resource: stocks
     enabled: true
     tags: [tech, sp500, large_cap]
-    
+
   - ticker: GOOGL
     name: Alphabet Inc.
     asset_type: stock
@@ -19,7 +18,7 @@ assets:
     resource: stocks
     enabled: true
     tags: [tech, sp500, large_cap]
-    
+
   - ticker: MSFT
     name: Microsoft Corporation
     asset_type: stock
@@ -27,7 +26,7 @@ assets:
     resource: stocks
     enabled: true
     tags: [tech, sp500, large_cap]
-    
+
   - ticker: SPY
     name: S&P 500 ETF
     asset_type: stock
@@ -44,7 +43,7 @@ assets:
     resource: forex
     enabled: true
     tags: [major_pair, fiat]
-    
+
   - ticker: C:GBPUSD
     name: GBP/USD
     asset_type: forex
@@ -63,27 +62,4 @@ assets:
     tags: [crypto, btc, large_cap]
     params:
       coin_id: bitcoin
-      vs_currency: usd
-
-  # Example: Adding more cryptocurrencies (disabled for now)
-  - ticker: ethereum
-    name: Ethereum
-    asset_type: crypto
-    source: coingecko
-    resource: market_chart
-    enabled: false
-    tags: [crypto, eth, large_cap]
-    params:
-      coin_id: ethereum
-      vs_currency: usd
-      
-  - ticker: solana
-    name: Solana
-    asset_type: crypto
-    source: coingecko
-    resource: market_chart
-    enabled: false
-    tags: [crypto, sol, large_cap]
-    params:
-      coin_id: solana
       vs_currency: usd
