@@ -28,7 +28,6 @@ DEFAULT_ARGS = {
 }
 
 # DAG generation defaults
-# These can be customized per source/resource if needed
 DAG_DEFAULTS = {
     "schedule": "@daily",
     "start_date": datetime(2026, 1, 26),
@@ -69,10 +68,12 @@ def auto_discover_dag_configs() -> List[Dict]:
                 "display_name", resource.replace("_", " ").title()
             )
             resource_tags = contract["resource"].get("tags", [])
+            schedule = contract["resource"].get("schedule", DAG_DEFAULTS["schedule"])
         except Exception as _:
             source_display = source.title()
             resource_display = resource.replace("_", " ").title()
             resource_tags = []
+            schedule = DAG_DEFAULTS["schedule"]
 
         # Build tags: base tags + resource-specific tags
         tags = ["ingestion", source, resource] + resource_tags
@@ -86,7 +87,7 @@ def auto_discover_dag_configs() -> List[Dict]:
             "dag_id": dag_id,
             "source": source,
             "resource": resource,
-            "schedule": DAG_DEFAULTS["schedule"],
+            "schedule": schedule,
             "start_date": DAG_DEFAULTS["start_date"],
             "dag_tags": tags,
             "description": description,
