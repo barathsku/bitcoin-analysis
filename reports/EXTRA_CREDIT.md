@@ -1,20 +1,22 @@
-# Extra Credit: Uniswap V2 USDC/WETH Pool Analysis
+# Extra Credit
+
+## Uniswap V2 USDC/WETH Pool Analysis
 
 This analysis focuses on the Uniswap V2 USDC/WETH contract (Address: `0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc`).
 
-## 1. Recent Swap Activity
+### 1. Recent Swap Activity
 The screenshot below captures the most recent swap events from the contract's Events tab on Etherscan.
 
 ![Recent Swap Events](assets/extra_credit/recent_swaps.png)
 
 ---
 
-## 2. Transaction Analysis
+### 2. Transaction Analysis
 A specific transaction was selected for detailed analysis to decode the raw event data into human-readable values.
 
 **Transaction Hash**: [`0x19abfcf5f445c233ac63eaeb2f929ea9784c7e5192002ca3bda34f3b56767cd6`](https://etherscan.io/tx/0x19abfcf5f445c233ac63eaeb2f929ea9784c7e5192002ca3bda34f3b56767cd6)
 
-### 2.1 Event Log Data
+#### 2.1 Event Log Data
 From the transaction logs, I extracted the following raw values for the swap event.
 
 | Parameter | Raw Value | Description |
@@ -28,7 +30,7 @@ From the transaction logs, I extracted the following raw values for the swap eve
 
 ![Transaction Log Details](assets/extra_credit/transaction_log.png)
 
-### 2.2 Token/Value Identification
+#### 2.2 Token/Value Identification
 To interpret the amounts, the tokens corresponding to `token0` and `token1` in this specific pair must be identified.
 
 *   Token0: [USDC (USD Coin)](https://etherscan.io/token/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48)
@@ -47,3 +49,13 @@ $$\frac{5008826}{10^6} = \mathbf{5.008826 \text{ USDC}}$$
 
 ### 3. Conclusion
 The sender swapped **0.0017897 WETH** for approximately **5.008826 USDC**.
+
+## Dune Analytics Query
+
+Query URL: https://dune.com/queries/6618414/?utm_source=share&utm_medium=copy&utm_campaign=query
+
+Note: The original requirement requested a count of unique traders (takers). In Uniswap V2 (to my understanding), the address that directly interacts with the pool (the taker) is often a Router contract or aggregator executing trades on behalf of multiple users, rather than the user's wallet itself. For my learning, the query calculates both metrics:
+
+1. unique_takers_direct: Strictly counts the addresses interacting with the liquidity pool.
+
+2. unique_users_tx_from: Counts the distinct wallet addresses that initiated the transaction.
