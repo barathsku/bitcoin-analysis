@@ -40,6 +40,7 @@ with DAG(
             description="Force re-fetch even if data exists (for corrupted data recovery)",
         ),
     },
+    render_template_as_native_obj=True,
 ) as dag:
     begin = EmptyOperator(task_id="begin")
     end = EmptyOperator(task_id="end")

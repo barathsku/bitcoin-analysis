@@ -143,7 +143,11 @@ def _ingest_data(
         writer = ParquetWriter()
 
         # Gap-aware fetching: check if data already exists
-        force_refetch = kwargs.get("force_refetch", False)
+        raw_force_refetch = kwargs.get("force_refetch", False)
+        if isinstance(raw_force_refetch, str):
+            force_refetch = raw_force_refetch.lower() == "true"
+        else:
+            force_refetch = bool(raw_force_refetch)
         ticker = kwargs.get("ticker")
 
         if not force_refetch:
