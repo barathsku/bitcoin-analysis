@@ -6,51 +6,89 @@ import time
 import random
 import logging
 from typing import Dict, Any, Optional
-from threading import Lock
 import requests
 
 logger = logging.getLogger(__name__)
 
 
-class TokenBucket:
-    """Thread-safe token bucket for rate limiting"""
+class RedisTokenBucket:
+    """Token bucket using Redis for rate limiting across different Airflow workers"""
 
-    def __init__(self, tokens_per_minute: int):
+    # Lua script for atomic token bucket operations
+    # Keys: [rate_limit_key]
+    # Args: [rate (tokens/sec), capacity, requested_tokens, current_timestamp]
+    # Returns: [allowed (0/1), sleep_time_needed]
+    LUA_SCRIPT = """
+    local key = KEYS[1]
+    local rate = tonumber(ARGV[1])
+    local capacity = tonumber(ARGV[2])
+    local requested = tonumber(ARGV[3])
+    local now = tonumber(ARGV[4])
+
+    local tokens_key = key .. ":tokens"
+    local timestamp_key = key .. ":ts"
+
+    local last_tokens = tonumber(redis.call("get", tokens_key))
+    if last_tokens == nil then
+        last_tokens = capacity
+    end
+
+    local last_refill = tonumber(redis.call("get", timestamp_key))
+    if last_refill == nil then
+        last_refill = now
+    end
+
+    local delta = math.max(0, now - last_refill)
+    local filled_tokens = math.min(capacity, last_tokens + (delta * rate))
+    
+    if filled_tokens >= requested then
+        local new_tokens = filled_tokens - requested
+        redis.call("set", tokens_key, new_tokens)
+        redis.call("set", timestamp_key, now)
+        -- Set expiry to avoid stale keys (1 hour)
+        redis.call("expire", tokens_key, 3600)
+        redis.call("expire", timestamp_key, 3600)
+        return {1, 0}
+    else
+        local missing = requested - filled_tokens
+        local wait_time = missing / rate
+        return {0, wait_time}
+    end
+    """
+
+    def __init__(self, redis_client: Any, key: str, tokens_per_minute: int):
         """
-        Initialize token bucket
+        Initialize distributed token bucket
 
         Args:
-            tokens_per_minute: Number of tokens (requests) allowed per minute
+            redis_client: Initialized redis.Redis client
+            key: Unique key for this rate limiter
+            tokens_per_minute: Number of tokens allowed per minute
         """
+        self.redis = redis_client
+        self.key = f"rate_limit:{key}"
         self.capacity = tokens_per_minute
-        self.tokens = tokens_per_minute
-        self.fill_rate = tokens_per_minute / 60.0
-        self.last_update = time.time()
-        self.lock = Lock()
-
-    def _refill(self):
-        """Refill tokens based on elapsed time"""
-        now = time.time()
-        elapsed = now - self.last_update
-        self.tokens = min(self.capacity, self.tokens + elapsed * self.fill_rate)
-        self.last_update = now
+        self.rate = tokens_per_minute / 60.0  # tokens per second
+        self.script = self.redis.register_script(self.LUA_SCRIPT)
 
     def acquire(self, tokens: int = 1) -> None:
         """
-        Acquire tokens. Blocks until tokens are available
+        Acquire tokens, blocks incoming requests until tokens are available
 
         Args:
             tokens: Number of tokens to acquire
         """
-        with self.lock:
-            while True:
-                self._refill()
-                if self.tokens >= tokens:
-                    self.tokens -= tokens
-                    return
-                tokens_needed = tokens - self.tokens
-                wait_time = tokens_needed / self.fill_rate
-                time.sleep(min(wait_time, 0.1))
+        while True:
+            now = time.time()
+            allowed, wait_time = self.script(
+                keys=[self.key], args=[self.rate, self.capacity, tokens, now]
+            )
+
+            if allowed:
+                return
+
+            sleep_time = float(wait_time)
+            time.sleep(min(sleep_time + 0.01, 1.0))
 
 
 class APIClient:
@@ -63,6 +101,8 @@ class APIClient:
         rate_limit_rpm: int = 30,
         max_retries: int = 3,
         timeout: int = 30,
+        redis_client: Optional[Any] = None,
+        rate_limit_key: Optional[str] = None,
     ):
         """
         Initialize API client
@@ -73,10 +113,22 @@ class APIClient:
             rate_limit_rpm: Requests per minute limit
             max_retries: Maximum number of retry attempts
             timeout: Request timeout in seconds
+            redis_client: Optional Redis client for distributed rate limiting
+            rate_limit_key: Key to use for distributed rate limiting
         """
         self.base_url = base_url.rstrip("/")
         self.auth_config = auth_config
-        self.rate_limiter = TokenBucket(rate_limit_rpm)
+
+        if redis_client and rate_limit_key:
+            self.rate_limiter = RedisTokenBucket(
+                redis_client, rate_limit_key, rate_limit_rpm
+            )
+        else:
+            logger.warning(
+                "No rate limiter configured (Redis client missing). Requests will not be throttled."
+            )
+            self.rate_limiter = None
+
         self.max_retries = max_retries
         self.timeout = timeout
         self.session = requests.Session()
@@ -135,7 +187,8 @@ class APIClient:
         Raises:
             requests.exceptions.RequestException: If all retries failed
         """
-        self.rate_limiter.acquire()
+        if self.rate_limiter:
+            self.rate_limiter.acquire()
 
         if endpoint.startswith("http"):
             url = endpoint

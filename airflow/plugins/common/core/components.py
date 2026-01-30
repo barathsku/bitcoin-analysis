@@ -6,6 +6,7 @@ import logging
 from datetime import datetime, timedelta, date
 from typing import Optional, Dict, Any
 from collections import defaultdict
+import redis
 
 from airflow.decorators import task, task_group
 from airflow.exceptions import AirflowException
@@ -117,12 +118,25 @@ def _ingest_data(
 
         # Initialize components
         api_config = contract["source"]
+
+        # Initialize Redis client for rate limiting
+        try:
+            redis_client = redis.Redis(host="redis", port=6379, db=0)
+            logger.info("Successfully connected to Redis for rate limiting")
+        except Exception as e:
+            logger.warning(
+                f"Failed to connect to Redis, falling back to local rate limiting: {e}"
+            )
+            redis_client = None
+
         api_client = APIClient(
             base_url=api_config["base_url"],
             auth_config=api_config["auth"],
             rate_limit_rpm=api_config.get("rate_limit", {}).get(
                 "requests_per_minute", 30
             ),
+            redis_client=redis_client,
+            rate_limit_key=source,
         )
 
         adapter = get_adapter(source, resource, contract)
