@@ -278,48 +278,6 @@ class Transformer:
 
         return records
 
-    def _deduplicate_records(
-        self, records: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
-        """
-        Deduplicate records by partition keys, keeping the last entry per partition
-
-        For CoinGecko data, multiple timestamps within the same day convert to the same
-        date. We keep the last occurrence (most recent timestamp) for each date
-
-        Args:
-            records: List of record dicts
-
-        Returns:
-            Deduplicated list of records
-        """
-        # Find partition keys from contract
-        partition_keys = []
-        for col_name, rule in self.extract_rules.items():
-            if rule.get("partition_key"):
-                partition_keys.append(col_name)
-
-        if not partition_keys:
-            # No partition keys defined, return as-is
-            return records
-
-        # Group records by partition key values
-        # Using a dict to maintain insertion order (last entry wins)
-        unique_records = {}
-        for record in records:
-            partition_tuple = tuple(record.get(key) for key in partition_keys)
-            unique_records[partition_tuple] = record
-
-        deduplicated = list(unique_records.values())
-
-        if len(deduplicated) < len(records):
-            logger.info(
-                f"Deduplicated {len(records)} records to {len(deduplicated)} "
-                f"(removed {len(records) - len(deduplicated)} duplicates)"
-            )
-
-        return deduplicated
-
     def _compute_schema_version(self) -> str:
         """
         Compute schema version hash from contract extract rules

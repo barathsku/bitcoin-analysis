@@ -162,27 +162,6 @@ class MetadataRepository:
 
         logger.info(f"Saved quality result for batch {batch_id}: valid={is_valid}")
 
-    def get_quality_result(self, batch_id: str) -> Optional[Dict[str, Any]]:
-        """
-        Retrieve quality result by batch_id.
-
-        Args:
-            batch_id: Batch identifier
-
-        Returns:
-            Dict with quality result or None if not found
-        """
-        with self.engine.connect() as conn:
-            result = conn.execute(
-                self.quality_results.select().where(
-                    self.quality_results.c.batch_id == batch_id
-                )
-            ).fetchone()
-
-            if result:
-                return dict(result._mapping)
-            return None
-
     def create_run(self, batch_id: str, source: str, resource: str, **kwargs) -> str:
         """
         Create a new pipeline run record.
