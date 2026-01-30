@@ -24,20 +24,48 @@ cd bitcoin-analysis
 
 ### 2. Configure Environment
 
-Create a `.env` file in the root directory to configure the environment. You can use the following template:
+Create a `.env` file in the root directory to configure the environment.
+
+**For Mac/Linux Users:**
+To prevent permission issues, you must set the `AIRFLOW_UID` to your current user ID. Run the following command:
 
 ```bash
-AIRFLOW_UID=1000
+echo -e "AIRFLOW_UID=$(id -u)" > .env
+```
+
+**For Windows Users:**
+You can manually create the `.env` file with a default UID:
+
+```bash
+echo "AIRFLOW_UID=50000" > .env
+```
+
+**Add API Keys & Project Config:**
+Append the following configurations to your `.env` file:
+
+```bash
 COINGECKO_API_KEY=your_api_key_here
 MASSIVE_API_KEY=your_api_key_here
 AIRFLOW_PROJ_DIR=.
 ```
 
-The CoinGecko/Massive API keys in the `.env` file for the ingestion DAGs to work as expected.
+The CoinGecko/Massive API keys in the `.env` file are required for the ingestion DAGs to work as expected.
 
 ### 3. Run the Platform
 
 We use Docker to orchestrate the Airflow services and resources.
+
+**First-time Setup (Database Initialization):**
+On the very first run, you need to initialize the database and create the default user.
+
+```bash
+docker compose up airflow-init
+```
+
+Wait until you see a message indicating "User \"airflow\" created" or "exited with code 0".
+
+**Start Services:**
+Once initialized, start the platform:
 
 ```bash
 docker compose up -d
