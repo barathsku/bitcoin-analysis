@@ -47,11 +47,12 @@ You will have to wait for 3-4 minutes for the services during first-time startup
 *   **Username**: `airflow`
 *   **Password**: `airflow`
 
-### 4. Execute the Pipeline
+### 4. Execute & Reproduce Results
 
 Once the services are running, you can orchestrate the data ingestion and transformation via the Airflow UI.
 
-For detailed instructions on enabling and running the standard pipelines or performing backfills, please refer to the **[Operations Guide](docs/OPERATIONS.md)**.
+*   **Standard Operations**: For daily runs and general management, see the **[Operations Guide](docs/OPERATIONS.md)**.
+*   **Reproduce Analysis Results**: To reproduce the specific outputs submitted for this assessment (covering `2025-01-28` to `2026-01-28`), please follow the step-by-step **[Reproduction Instructions](docs/OPERATIONS.md#reproducing-assessment-results)**.
 
 ## Documentation & Analysis
 
