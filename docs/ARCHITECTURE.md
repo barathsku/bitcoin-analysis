@@ -48,6 +48,21 @@ The design was anchored on the specific requirements of the assessment:
 4.  **Model**: dbt reads from bronze layer, applies business logic, and writes to silver/gold layers.
 5.  **Serve**: Downstream consumers (e.g., report/metadata generation) read from the gold layer.
 
+### Contract-Based Configuration
+
+The pipeline is driven by a declarative configuration system, located in `airflow/plugins/common/contracts/`. This contract-based approach decouples ingestion logic from code, allowing new assets or sources to be added primarily through YAML configuration.
+
+The hierarchy is as follows:
+
+1.  **Sources** (`sources.yaml`): Defines high-level API details (Base URL, Authentication headers, Rate limits).
+    *   *Example*: CoinGecko, Massive.
+2.  **Resources**: Defines specific data endpoints or types available from a source.
+    *   *Example*: `market_chart` (prices), `details` (metadata).
+3.  **Assets** (`assets.yaml` or resource-specific files): Defines the specific entities to ingest.
+    *   *Example*: `bitcoin` (for CoinGecko); `AAPL`, `MSFT` (for Massive).
+
+This registry acts as the single source of truth for what data should be in the platform, ensuring that the Airflow DAGs dynamically adjust to changes in the target asset list.
+
 ## Implementation Patterns
 
 ### Write-Audit-Publish (WAP)
@@ -80,6 +95,19 @@ Data is stored using Hive-style partitioning for efficient pruning:
 This layout enables:
 *   Idempotent re-runs: Re-ingesting a specific date only touches that partition.
 *   Efficient queries: DuckDB (or any other engine) can prune partitions at read time.
+
+### Distributed Rate Limiting (Redis)
+
+To ingest data from public APIs without breaching rate limit rules, a minimal distributed rate limiter is implemented using Redis.
+
+*   **Algorithm**: Token Bucket
+*   **Mechanism**:
+    *   Before any API request, the worker requests a token from Redis.
+    *   Redis atomically decrements the available token count.
+    *   If no tokens are available, the worker sleeps/retries until the bucket refills.
+*   **Why Redis?**
+    *   In a distributed Airflow environment with multiple workers/threads, a local in-memory counter would fail (each worker would track its own limit, collectively exceeding the global API quota). Redis provides a shared, atomic state for the global limit.
+        *    Also, Airflow's `docker-compose.yaml` comes with Redis pre-configured; we can leverage it for a basic demonstration.
 
 ## Scalability Path
 
