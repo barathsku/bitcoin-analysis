@@ -104,3 +104,73 @@ If data for Feb 10th was corrupted, force a full data refresh:
   "force_refetch": true
 }
 ```
+
+## Reproducing Assessment Results
+
+To reproduce the analysis results covering the assessment period (last 365 days), follow these steps to backfill all required data and run the transformation pipeline.
+
+### 1. Backfill Historical Data
+
+Trigger the `manual_ingestion` DAG for each of the following configurations. The submitted analysis used the window from 2025-01-28 to 2026-01-28, but since the time range is already past 365 days (as of viewing this file), you can either use a different time range (shown below) or unzip `data.zip` to find the exact data used in the analysis.
+
+Common Parameters for all runs (example):
+*   `start_date`: `2025-01-28`
+*   `end_date`: `2026-01-28`
+
+**Run 1: Bitcoin (CoinGecko)**
+
+```json
+{
+  "source": "coingecko",
+  "resource": "market_chart",
+  "ticker": "bitcoin",
+  "start_date": "2025-01-28",
+  "end_date": "2026-01-28"
+}
+```
+
+**Run 2: Stocks (Massive)**
+
+Repeat the Trigger DAG process for each of these tickers: `AAPL`, `MSFT`, `GOOGL`, `SPY`.
+
+```json
+{
+  "source": "massive",
+  "resource": "stocks",
+  "ticker": "AAPL",
+  "start_date": "2025-01-28",
+  "end_date": "2026-01-28"
+}
+```
+*(Replace `AAPL` with `MSFT`, `GOOGL`, and `SPY` for subsequent runs)*
+
+**Run 3: Forex (Massive)**
+
+Repeat for each of these tickers: `C:EURUSD`, `C:GBPUSD`.
+
+```json
+{
+  "source": "massive",
+  "resource": "forex",
+  "ticker": "C:EURUSD",
+  "start_date": "2025-01-28",
+  "end_date": "2026-01-28"
+}
+```
+*(Replace `C:EURUSD` with `C:GBPUSD` for subsequent runs)*
+
+### 2. Run Transformations
+
+After all ingestion runs show `Success`:
+
+1.  Trigger the `dbt_pipeline_and_docs` DAG.
+2.  Wait for completion. This will process the raw data into processed models and calculate all metrics (volatility, returns, etc).
+
+### 3. View Results
+
+*   Analysis Report: `reports/ANALYSIS.md` (static report based on the data processed in data.zip).
+*   Data Output:
+    *   Silver Layer: `data/intermediate/**/*.parquet`
+    *   Gold Layer: `data/marts/**/*.parquet`
+    *   Reports: `data/reports/**/*.parquet`
+    *   DuckDB: You can inspect the local `dbt/analysis/dbt.duckdb` file if needed (though it's transient and not required for the analysis).
