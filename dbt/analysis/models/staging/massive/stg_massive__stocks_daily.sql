@@ -1,4 +1,5 @@
 {{ config(location=generate_external_location()) }}
+-- Ideally this should be a view, but due to how DuckDB works with dbt, this needs to be exported to an external table format.
 
 with source as (
     select * from {{ source('massive', 'stocks_daily') }}

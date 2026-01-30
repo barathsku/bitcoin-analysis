@@ -1,4 +1,5 @@
 {{ config(location=generate_external_location()) }}
+-- Ideally this should be a view, but due to how DuckDB works with dbt, this needs to be exported to an external table format.
 
 select
     cast(holiday_date as date) as holiday_date,
