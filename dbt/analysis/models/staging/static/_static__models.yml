@@ -1,8 +1,8 @@
 version: 2
 
 models:
-  - name: stg_static__us_market_holidays
-    description: "Static list of US market holidays"
+  - name: stg_static__market_holidays
+    description: "Static list of market holidays (US and UK)"
     meta:
       owner: "barath"
     columns:
@@ -10,10 +10,15 @@ models:
         description: "Date of the holiday"
         tests:
           - not_null
-          - unique
       - name: holiday_name
         description: "Name of the holiday"
       - name: market_status
         description: "Status of the market (e.g., Closed, Early Close)"
         tests:
           - not_null
+      - name: market_code
+        description: "Market code (US or UK)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['US', 'UK', 'EU']

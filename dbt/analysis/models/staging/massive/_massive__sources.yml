@@ -18,7 +18,7 @@ sources:
         meta:
           source_api: "Massive/Polygon"
           refresh: "daily"
-          external_location: "read_parquet('{{ env_var('DBT_DATA_PATH', '../../../data') }}/bronze/source=massive/resource=stocks/**/*.parquet', hive_partitioning=true, union_by_name=true)"
+          external_location: "read_parquet('{{ env_var('DBT_DATA_PATH', '../../data') }}/bronze/source=massive/resource=stocks/**/*.parquet', hive_partitioning=true, union_by_name=true)"
         columns:
           - name: ticker
             description: "Stock ticker symbol"
@@ -60,7 +60,7 @@ sources:
         meta:
           source_api: "Massive/Polygon"
           refresh: "daily"
-          external_location: "read_parquet('{{ env_var('DBT_DATA_PATH', '../../../data') }}/bronze/source=massive/resource=forex/**/*.parquet', hive_partitioning=true, union_by_name=true)"
+          external_location: "read_parquet('{{ env_var('DBT_DATA_PATH', '../../data') }}/bronze/source=massive/resource=forex/**/*.parquet', hive_partitioning=true, union_by_name=true)"
         columns:
           - name: ticker
             description: "Forex pair ticker (e.g., C:EURUSD)"
