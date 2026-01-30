@@ -65,8 +65,9 @@ Optional:
 
 The project includes detailed documentation and the final analysis report:
 
-*   **[Architecture & Design](docs/architecture.md)**: A deep dive into the system design, including the WAP pattern, data layers (bronze, silver, gold), and design trade-offs.
-*   **[Data Dictionary](docs/data_dictionary.md)**: Detailed schema definitions for the datasets.
+*   **[Architecture & Design](docs/ARCHITECTURE.md)**: A deep dive into the system design, including the WAP pattern, data layers (bronze, silver, gold), and design trade-offs.
+*   **[Data Quality](docs/DATA_QUALITY.md)**: An introduction to how data quality is implemented/observed throughout the pipeline.
+*   **[Data Dictionary](docs/DATA_DICTIONARY.md)**: Detailed schema definitions for the datasets.
 *   **[Analysis Report](reports/ANALYSIS.md)**: The written analysis answering the assessment questions (e.g., Bitcoin vs. Fiat volatility, DCA vs. Lump Sum).
 *   **[Extra Credit](reports/EXTRA_CREDIT.md)**: Solutions for the extra credit questions (Etherscan & Dune Analytics).
 
