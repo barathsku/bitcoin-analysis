@@ -19,8 +19,41 @@ date_attributes as (
             when extract(dayofweek from data_date) in (0, 6) then 0
             when data_date in (
                 select holiday_date 
-                from {{ ref('stg_static__us_market_holidays') }} 
-                where market_status = 'closed'
+                from {{ ref('stg_static__market_holidays') }} 
+                where market_code = 'US' and market_status = 'closed'
+            ) then 0
+            else 1
+        end as is_us_trading_day,
+        
+        -- UK market holidays
+        case
+            when extract(dayofweek from data_date) in (0, 6) then 0
+            when data_date in (
+                select holiday_date 
+                from {{ ref('stg_static__market_holidays') }} 
+                where market_code = 'UK' and market_status = 'closed'
+            ) then 0
+            else 1
+        end as is_uk_trading_day,
+        
+        -- EU market holidays
+        case
+            when extract(dayofweek from data_date) in (0, 6) then 0
+            when data_date in (
+                select holiday_date 
+                from {{ ref('stg_static__market_holidays') }} 
+                where market_code = 'EU' and market_status = 'closed'
+            ) then 0
+            else 1
+        end as is_eu_trading_day,
+        
+        -- Default generic is_trading_day (aliases to US for backward compat)
+        case
+            when extract(dayofweek from data_date) in (0, 6) then 0
+            when data_date in (
+                select holiday_date 
+                from {{ ref('stg_static__market_holidays') }} 
+                where market_code = 'US' and market_status = 'closed'
             ) then 0
             else 1
         end as is_trading_day,
@@ -42,6 +75,9 @@ select
     quarter,
     day_of_year,
     is_trading_day,
+    is_us_trading_day,
+    is_uk_trading_day,
+    is_eu_trading_day,
     is_year_start,
     strftime(data_date, '%Y-%m') as year_month,
     strftime(data_date, '%Y') || '-Q' || quarter as year_quarter
