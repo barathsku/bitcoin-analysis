@@ -109,6 +109,18 @@ If a suspicious price appears in a report:
 2. Look up the batch in `pipeline_runs` and `pipeline_steps` for timing and metadata
 3. Check the original staging file at `data/staging/source={source}/ingestion_date={date}/batch_id={batch_id}/`
 
+### Visual Model Lineage
+
+In addition to row-level lineage via metadata columns, a comprehensive visual lineage graph of the data models is also available. This dbt-generated documentation website illustrates the transformations from raw sources through staging and intermediate tables to the final marts.
+
+*   File: [`dbt_docs.html`](../dbt_docs.html)
+*   Features:
+    *   Interactive Lineage Graph: Visualizes the Directed Acyclic Graph (DAG) of the project.
+    *   Model Documentation: Detailed descriptions of every model, column, and applied test.
+    *   Source Information: Metadata about the upstream data sources.
+
+To view the documentation, simple open the HTML file in a web browser (it is a standalone static site).
+
 ## 4. Missing Data Strategy
 
 Financial data has natural gaps (weekends, holidays, API failures). We handle this explicitly rather than ignoring it.

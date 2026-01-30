@@ -168,6 +168,8 @@ After all ingestion runs show `Success` (or if you have used `data.zip`):
 
 ### 3. View Results
 
+*   Visual Lineage & Specs: [`dbt_docs.html`](dbt_docs.html) - Interactive dbt-generated model documentation containing the full data lineage graph. 
+    *   Download and view the HTML file, as it can't be rendered externally via htmlpreview.github.io
 *   Analysis Report: `reports/ANALYSIS.md` (static report based on the data processed in data.zip).
 *   Data Output:
     *   Silver Layer: `data/intermediate/**/*.parquet`
