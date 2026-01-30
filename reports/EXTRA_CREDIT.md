@@ -39,7 +39,7 @@ To interpret the amounts, the tokens corresponding to `token0` and `token1` in t
     *   Address: `0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2`
 
 **Calculation Formula**:
-$$ \text{Readable Amount} = \frac{\text{Raw Amount}}{10^{\text{Decimals}}} $$
+$$\text{Readable Amount} = \frac{\text{Raw Amount}}{10^{\text{Decimals}}}$$
 
 **1. WETH Amount (amount1In)**:
 $$\frac{1789724345320037}{10^{18}} \approx \mathbf{0.0017897 \text{ WETH}}$$
