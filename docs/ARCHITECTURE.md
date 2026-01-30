@@ -52,18 +52,19 @@ The design was anchored on the specific requirements of the assessment:
 
 ### Write-Audit-Publish (WAP)
 
-To guarantee data quality in a file-based lakehouse (where transactions are not ACID by default), we implement a WAP workflow at the filesystem layer:
+To guarantee data quality in a file-based lakehouse (where transactions are not ACID by default), we implement a write-audit-publish workflow at the filesystem layer.
 
-| Phase | Action | Implementation |
-| :--- | :--- | :--- |
-| Write | Transform raw JSON to Parquet. | Output is written to a hidden `_tmp_{partition}` directory. |
-| Audit | Run quality checks against the staged data. | Soda Core executes checks defined in `contracts/*.yaml`. |
-| Publish | Atomically promote staged data to final location. | `os.rename()` swaps `_tmp` to the final partition path. This is an atomic OS operation. |
+**Core Concept:**
+*   Write: Ingest to `_tmp` (hidden to end-user).
+*   Audit: Verify data quality *before* it is visible.
+*   Publish: Atomic rename to final path.
 
-*   If the audit fails, the `_tmp` directory is discarded. Bad data should never reach the consumer under any circumstances.
+For detailed validation mechanics, checks, and metadata schemas, see **[DATA_QUALITY.md](DATA_QUALITY.md)**.
+
+*   If the audit fails, the `_tmp` directory is retained for debugging purposes. Bad data should never reach the consumer under any circumstances.
 *   This pattern simulates the ACID commit model of Iceberg/Delta Lake without requiring the catalog infrastructure.
 
-### Blue-Green Deployment (for Data)
+### Blue-Green Deployment
 
 The WAP pattern provides blue-green deployment semantics:
 *   Blue (Current): The existing verified data partition.
