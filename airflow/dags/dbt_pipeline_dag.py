@@ -57,4 +57,16 @@ with DAG(
         env={"AIRFLOW_HOME": "/opt/airflow", "PYTHONPATH": "/opt/airflow"},
     )
 
-    dbt_deps >> dbt_build >> dbt_docs_generate >> generate_markdown_dictionary
+    copy_dbt_docs = BashOperator(
+        task_id="copy_dbt_docs",
+        bash_command="cp target/static_index.html /opt/airflow/docs/dbt_docs.html",
+        cwd="/opt/airflow/dbt/analysis",
+    )
+
+    (
+        dbt_deps
+        >> dbt_build
+        >> dbt_docs_generate
+        >> copy_dbt_docs
+        >> generate_markdown_dictionary
+    )

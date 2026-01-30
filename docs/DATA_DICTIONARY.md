@@ -1,6 +1,6 @@
 # Data Dictionary
 
-**Last Updated**: 2026-01-29 14:20:57 UTC
+**Last Updated**: 2026-01-30 04:24:35 UTC
 
 This document is automatically generated from dbt artifacts.
 
@@ -89,6 +89,9 @@ This document is automatically generated from dbt artifacts.
 | `quarter` | BIGINT | Quarter of the year (1-4) |
 | `day_of_year` | BIGINT | Day of the year (1-366) |
 | `is_trading_day` | INTEGER | Flag indicating weekday (Mon-Fri) |
+| `is_us_trading_day` | INTEGER |  |
+| `is_uk_trading_day` | INTEGER |  |
+| `is_eu_trading_day` | INTEGER |  |
 | `is_year_start` | INTEGER | Flag indicating if date is first day of year |
 | `year_month` | VARCHAR | Year and month (YYYY-MM) |
 | `year_quarter` | VARCHAR | Year and quarter (YYYY-Q#) |
@@ -106,6 +109,8 @@ This document is automatically generated from dbt artifacts.
 | `data_date` | DATE | Price date |
 | `close_price` | DOUBLE | Closing price in USD |
 | `price_source` | VARCHAR | Whether price was observed from source data or imputed via forward-fill |
+| `__batch_id` | VARCHAR | Ingestion batch identifier (forward-filled for traceability) |
+| `__ingested_at` | VARCHAR | Timestamp of ingestion (forward-filled) |
 
 ---
 
@@ -120,6 +125,8 @@ This document is automatically generated from dbt artifacts.
 | `data_date` | DATE | Return date |
 | `close_price` | DOUBLE | Closing price on the return date |
 | `daily_return` | DOUBLE | Daily return percentage (decimal) |
+| `__batch_id` | VARCHAR | Ingestion batch identifier |
+| `__ingested_at` | VARCHAR | Timestamp of ingestion |
 
 ---
 
@@ -276,14 +283,15 @@ This document is automatically generated from dbt artifacts.
 
 ---
 
-### Table: `stg_static__us_market_holidays`
-**Description**: Static list of US market holidays
+### Table: `stg_static__market_holidays`
+**Description**: Static list of market holidays (US and UK)
 
 | Column | Type | Description |
 |--------|------|-------------|
 | `holiday_date` | DATE | Date of the holiday |
 | `holiday_name` | VARCHAR | Name of the holiday |
 | `market_status` | VARCHAR | Status of the market (e.g., Closed, Early Close) |
+| `market_code` | VARCHAR | Market code (US or UK) |
 
 ---
 
@@ -318,6 +326,8 @@ This document is automatically generated from dbt artifacts.
 | `prev_close_price` | DOUBLE | Previous trading day's closing price |
 | `daily_return` | DOUBLE | Percentage daily return (decimal) |
 | `days_gap` | BIGINT | Number of days since previous observation |
+| `__batch_id` | VARCHAR | Ingestion batch identifier |
+| `__ingested_at` | VARCHAR | Timestamp of ingestion |
 
 ---
 
