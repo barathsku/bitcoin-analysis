@@ -116,8 +116,6 @@ The potential implication for anyone investing in Bitcoin would be the following
 2. Because the price swings are unpredictable, it's smarter to keep the invested amount relatively small
 3. Even though Bitcoin is risky on its own, it doesn't move in sync with the stock market. This means adding a little bit can actually help balance out an overall portfolio
 
-### Visual Evidence
-
 ![Annualized Volatility Comparison](assets/analysis/volatility_comparison.png)
 
 ---
