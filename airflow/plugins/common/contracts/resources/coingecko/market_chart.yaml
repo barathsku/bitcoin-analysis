@@ -5,6 +5,7 @@ resource:
   display_name: Cryptocurrency
   source: coingecko
   adapter: CoinGeckoAdapter
+  schedule: "0 6 * * *"
   tags:
     - crypto
     - cryptocurrency

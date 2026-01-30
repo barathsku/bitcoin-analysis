@@ -5,6 +5,7 @@ resource:
   display_name: Forex
   source: massive
   adapter: MassiveForexAdapter
+  schedule: "0 6 * * *"
   tags:
     - currency
     - forex

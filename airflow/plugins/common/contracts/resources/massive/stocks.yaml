@@ -5,6 +5,7 @@ resource:
   display_name: Stocks
   source: massive
   adapter: MassiveStocksAdapter
+  schedule: "0 6 * * *"
   tags:
     - equity
     - stocks
