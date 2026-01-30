@@ -206,9 +206,6 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-# Data pipeline storage
-data/
-
 # Airflow-specific
 logs/
 
@@ -217,5 +214,5 @@ logs/
 
 # Miscellaneous
 scripts_local/
-ASSESSMENT.md
 data_local/
+ASSESSMENT.md
