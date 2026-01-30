@@ -68,6 +68,10 @@ models:
         description: "Percentage daily return (decimal)"
       - name: days_gap
         description: "Number of days since previous observation"
+      - name: __batch_id
+        description: "Ingestion batch identifier"
+      - name: __ingested_at
+        description: "Timestamp of ingestion"
 
   - name: int_market__btc_relative_perf
     description: "Compares asset performance relative to Bitcoin"

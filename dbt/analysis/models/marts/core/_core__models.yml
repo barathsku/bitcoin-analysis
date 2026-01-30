@@ -86,6 +86,10 @@ models:
           - accepted_values:
               arguments:
                 values: ['OBSERVED', 'IMPUTED']
+      - name: __batch_id
+        description: "Ingestion batch identifier (forward-filled for traceability)"
+      - name: __ingested_at
+        description: "Timestamp of ingestion (forward-filled)"
 
   - name: fct_daily_returns
     description: "Fact table of daily returns"
@@ -108,5 +112,9 @@ models:
         description: "Closing price on the return date"
       - name: daily_return
         description: "Daily return percentage (decimal)"
+      - name: __batch_id
+        description: "Ingestion batch identifier"
+      - name: __ingested_at
+        description: "Timestamp of ingestion"
 
 
