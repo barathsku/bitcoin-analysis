@@ -4,6 +4,8 @@
   - BTC (crypto) should have no gaps (trades 24/7)
   - Stocks should have no gaps on trading days
   - Forex gaps on weekends are acceptable, hence excluded
+  - If we have forex data on a (bank) holiday, it is acceptable. Whats not acceptable is having no 
+    data on days we expect the market to be open
   
   This test will throw an error if any rows are returned.
 #}
