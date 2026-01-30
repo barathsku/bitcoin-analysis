@@ -13,11 +13,21 @@ with expected_dates as (
         a.asset_id,
         a.asset_type,
         d.date as expected_date,
-        d.is_trading_day
+        d.is_trading_day,
+        d.is_us_trading_day,
+        d.is_uk_trading_day,
+        d.is_eu_trading_day
     from {{ ref('dim_assets') }} a
     cross join {{ ref('dim_dates') }} d
     -- Filter: Stocks/index only expect trading days; crypto/fiat expect all days
-    where (a.asset_type in ('crypto', 'fiat') or d.is_trading_day = 1)
+    where 
+        case
+            when a.asset_type in ('crypto', 'fiat') then 1
+            when a.asset_type in ('stock', 'index') then d.is_us_trading_day
+            when a.asset_type = 'forex' and a.asset_id like '%GBP%' then d.is_uk_trading_day
+            when a.asset_type = 'forex' and a.asset_id like '%EUR%' then d.is_eu_trading_day
+            else d.is_us_trading_day
+        end = 1
 ),
 
 actual_dates as (
