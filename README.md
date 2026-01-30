@@ -47,20 +47,11 @@ You will have to wait for 3-4 minutes for the services during first-time startup
 *   **Username**: `airflow`
 *   **Password**: `airflow`
 
-### 4. Execute the Pipeline (Optional)
+### 4. Execute the Pipeline
 
-1.  Navigate to the Airflow UI.
-2.  Enable and run **`coingecko_market_chart_ingestion`, `massive_forex_ingestion`, `massive_stocks_ingestion`** DAGs.
-    *   These DAGs orchestrate the fetching of T-1 data from APIs (Massive & CoinGecko).
-    *   **Note**: Ingestion DAGs are scheduled at 06:00 UTC to account for data availability delays (e.g., free tier API's T-1 restrictions) and ensure data consistency.
-    *   They use a write-audit-publish pattern to write atomic data to the bronze layer.
-    *   They automatically trigger the downstream dbt models to transform data into analysis-ready datasets.
-3.  Enable and run **`dbt_run`** DAG.
-    *   This DAG orchestrates the dbt models to transform data into analysis-ready datasets.
+Once the services are running, you can orchestrate the data ingestion and transformation via the Airflow UI.
 
-Optional:
-
-4. Enable and run `manual_ingestion` DAG to ingest/backfill data for a specific date range across different source/resource combinations.
+For detailed instructions on enabling and running the standard pipelines or performing backfills, please refer to the **[Operations Guide](docs/OPERATIONS.md)**.
 
 ## Documentation & Analysis
 
@@ -71,6 +62,7 @@ The project includes detailed documentation and the final analysis report:
 *   **[Data Dictionary](docs/DATA_DICTIONARY.md)**: Detailed schema definitions for the datasets.
 *   **[Analysis Report](reports/ANALYSIS.md)**: The written analysis answering the assessment questions (e.g., Bitcoin vs. Fiat volatility, DCA vs. Lump Sum).
 *   **[Extra Credit](reports/EXTRA_CREDIT.md)**: Solutions for the extra credit questions (Etherscan & Dune Analytics).
+*   **[Operations Guide](docs/OPERATIONS.md)**: Instructions for accessing the UI, triggering DAGs, and performing manual backfills.
 
 ## Testing
 
