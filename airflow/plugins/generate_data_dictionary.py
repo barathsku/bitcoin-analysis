@@ -21,7 +21,7 @@ TARGET_DIR = DBT_PROJECT_DIR / "target"
 DOCS_DIR = Path(os.environ.get("AIRFLOW_HOME", "/opt/airflow")) / "docs"
 MANIFEST_PATH = TARGET_DIR / "manifest.json"
 CATALOG_PATH = TARGET_DIR / "catalog.json"
-OUTPUT_FILE = DOCS_DIR / "data_dictionary.md"
+OUTPUT_FILE = DOCS_DIR / "DATA_DICTIONARY.md"
 
 
 def load_artifacts() -> tuple[ManifestV2, CatalogV1]:
