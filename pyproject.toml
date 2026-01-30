@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bitcoin-analysis"
-version = "0.1.0"
+version = "1.0.0"
 description = "Bitcoin vs Traditional Assets Analysis Pipeline"
 authors = [{name = "barath"}]
 readme = "README.md"
