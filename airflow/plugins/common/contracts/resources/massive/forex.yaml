@@ -11,7 +11,7 @@ resource:
     - forex
   endpoint: /v2/aggs/ticker/{ticker}/range/{multiplier}/{timespan}/{from}/{to}
   method: GET
-  
+
   path_params:
     ticker: "{ticker}"
     multiplier: "1"
@@ -24,11 +24,11 @@ resource:
     ticker:
       path: "_param.ticker"
       type: string
-      partition_key: true  # Partition by ticker (forex pair) first
+      partition_key: true # Partition by ticker (forex pair) first
     data_date:
       path: "results[*].t"
       type: timestamp_ms_to_date
-      partition_key: true  # Then by date
+      partition_key: true # Then by date
     open:
       path: "results[*].o"
     high:
@@ -52,7 +52,7 @@ resource:
       - close > 0
       - high_lt_low = 0:
           high_lt_low query: |
-             SELECT COUNT(*) FROM {table} WHERE high < low
+            SELECT COUNT(*) FROM {table} WHERE high < low
       - no_duplicate_dates = 0:
           no_duplicate_dates query: |
             SELECT COUNT(*) FROM (

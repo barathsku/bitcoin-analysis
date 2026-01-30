@@ -11,10 +11,10 @@ resource:
     - cryptocurrency
   endpoint: /coins/{coin_id}/market_chart
   method: GET
-  
+
   path_params:
     coin_id: "{ticker}"
-    
+
   query_params:
     vs_currency: "usd"
     days: "{days}"
