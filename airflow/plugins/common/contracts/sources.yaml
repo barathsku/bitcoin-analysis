@@ -23,4 +23,4 @@ sources:
       header_name: x-cg-demo-api-key
       api_key: ${COINGECKO_API_KEY}
     rate_limit:
-      requests_per_minute: 30
+      requests_per_minute: 5
